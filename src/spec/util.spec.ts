@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 describe('util', () => {
   describe('nextFrame', () => {
     test('should resolve', async () => {
-      expect(nextFrame()).resolves;
+      await expect(nextFrame()).resolves.toEqual(undefined);
     });
   });
 });
