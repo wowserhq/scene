@@ -22,3 +22,6 @@ to render said formats in modern browsers using WebGL 2. There is no use of nati
 
 Except where otherwise noted, Wowser Scene is copyright © 2023 Wowser Contributors. It is licensed
 under the **MIT license**. See `LICENSE` for more information.
+
+Wrath of the Lich King is a trademark, and World of Warcraft and Warcraft are trademarks or
+registered trademarks of Blizzard Entertainment, Inc., in the U.S. and/or other countries.
