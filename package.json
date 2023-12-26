@@ -18,8 +18,8 @@
   "scripts": {
     "build": "npm run clean && npm run test && npm run build:cjs && npm run build:esm && npm run build:types && npm run build:package",
     "build:cjs": "tsc --module commonjs --moduleResolution node --outDir ./dist/cjs",
-    "build:esm": "tsc --module node16 --outDir ./dist/esm",
-    "build:types": "tsc --module node16 --emitDeclarationOnly --declaration --declarationDir ./dist/types",
+    "build:esm": "tsc --module es2022 --outDir ./dist/esm",
+    "build:types": "tsc --module es2022 --emitDeclarationOnly --declaration --declarationDir ./dist/types",
     "build:package": "node ./script/build-package.js",
     "clean": "node ./script/clean.js",
     "format": "prettier ./src/**/* --write",
