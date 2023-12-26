@@ -1,9 +1,9 @@
 # Wowser Scene
 
 [![join community](https://img.shields.io/badge/discord-join_community-blue.svg?style=flat)](https://discord.com/invite/DeVVKVg)
-[![npm](https://img.shields.io/npm/v/%40wowserhq%2Fscene)](https://www.npmjs.com/package/@wowserhq/format)
-[![ci status](https://github.com/wowserhq/scene/actions/workflows/ci.yml/badge.svg)](https://github.com/wowserhq/format/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/github/wowserhq/scene/graph/badge.svg?token=6X4JBB54YI)](https://codecov.io/github/wowserhq/format)
+[![npm](https://img.shields.io/npm/v/%40wowserhq%2Fscene)](https://www.npmjs.com/package/@wowserhq/scene)
+[![ci status](https://github.com/wowserhq/scene/actions/workflows/ci.yml/badge.svg)](https://github.com/wowserhq/scene/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/wowserhq/scene/graph/badge.svg?token=6X4JBB54YI)](https://codecov.io/github/wowserhq/scene)
 
 Three.js rendering classes for World of Warcraft model formats.
 
