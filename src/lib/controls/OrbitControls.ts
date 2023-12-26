@@ -28,7 +28,7 @@ const EPS = 0.000001;
 const TWO_PI = 2 * Math.PI;
 
 class OrbitControls extends EventDispatcher<any> {
-  object: THREE.OrthographicCamera | THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera | THREE.PerspectiveCamera;
   domElement: HTMLElement;
 
   // Set to false to disable this control
@@ -143,21 +143,21 @@ class OrbitControls extends EventDispatcher<any> {
   // the target DOM element for key events
   #domElementKeyEvents: HTMLElement = null;
 
-  constructor(object: THREE.OrthographicCamera | THREE.PerspectiveCamera, domElement: HTMLElement) {
+  constructor(camera: THREE.OrthographicCamera | THREE.PerspectiveCamera, domElement: HTMLElement) {
     super();
 
-    this.object = object;
+    this.camera = camera;
     this.domElement = domElement;
     this.domElement.style.touchAction = 'none'; // disable touch scroll
 
     // for reset
     this.#target0 = this.target.clone();
-    this.#position0 = this.object.position.clone();
-    this.#zoom0 = this.object.zoom;
+    this.#position0 = this.camera.position.clone();
+    this.#zoom0 = this.camera.zoom;
 
     // so camera.up is the orbit axis
     this.#quat = new THREE.Quaternion().setFromUnitVectors(
-      this.object.up,
+      this.camera.up,
       new THREE.Vector3(0, 1, 0),
     );
     this.#quatInverse = this.#quat.clone().invert();
@@ -182,7 +182,7 @@ class OrbitControls extends EventDispatcher<any> {
   }
 
   getDistance() {
-    return this.object.position.distanceTo(this.target);
+    return this.camera.position.distanceTo(this.target);
   }
 
   listenToKeyEvents(domElement: HTMLElement) {
@@ -197,16 +197,16 @@ class OrbitControls extends EventDispatcher<any> {
 
   saveState() {
     this.#target0.copy(this.target);
-    this.#position0.copy(this.object.position);
-    this.#zoom0 = this.object.zoom;
+    this.#position0.copy(this.camera.position);
+    this.#zoom0 = this.camera.zoom;
   }
 
   reset() {
     this.target.copy(this.#target0);
-    this.object.position.copy(this.#position0);
-    this.object.zoom = this.#zoom0;
+    this.camera.position.copy(this.#position0);
+    this.camera.zoom = this.#zoom0;
 
-    this.object.updateProjectionMatrix();
+    this.camera.updateProjectionMatrix();
     this.dispatchEvent(_changeEvent);
 
     this.update();
@@ -216,7 +216,7 @@ class OrbitControls extends EventDispatcher<any> {
 
   // this method is exposed, but perhaps it would be better if we can make it private...
   update(deltaTime: number = null) {
-    const position = this.object.position;
+    const position = this.camera.position;
 
     this.#offset.copy(position).sub(this.target);
 
@@ -291,7 +291,7 @@ class OrbitControls extends EventDispatcher<any> {
     // we adjust zoom later in these cases
     if (
       (this.zoomToCursor && this.#performCursorZoom) ||
-      this.object instanceof THREE.OrthographicCamera
+      this.camera instanceof THREE.OrthographicCamera
     ) {
       this.#spherical.radius = this.#clampDistance(this.#spherical.radius);
     } else {
@@ -305,7 +305,7 @@ class OrbitControls extends EventDispatcher<any> {
 
     position.copy(this.target).add(this.#offset);
 
-    this.object.lookAt(this.target);
+    this.camera.lookAt(this.target);
 
     if (this.enableDamping === true) {
       this.#sphericalDelta.theta *= 1 - this.dampingFactor;
@@ -322,32 +322,32 @@ class OrbitControls extends EventDispatcher<any> {
     let zoomChanged = false;
     if (this.zoomToCursor && this.#performCursorZoom) {
       let newRadius = null;
-      if (this.object instanceof THREE.PerspectiveCamera) {
+      if (this.camera instanceof THREE.PerspectiveCamera) {
         // move the camera down the pointer ray
         // this method avoids floating point error
         const prevRadius = this.#offset.length();
         newRadius = this.#clampDistance(prevRadius * this.#scale);
 
         const radiusDelta = prevRadius - newRadius;
-        this.object.position.addScaledVector(this.#dollyDirection, radiusDelta);
-        this.object.updateMatrixWorld();
-      } else if (this.object instanceof THREE.OrthographicCamera) {
+        this.camera.position.addScaledVector(this.#dollyDirection, radiusDelta);
+        this.camera.updateMatrixWorld();
+      } else if (this.camera instanceof THREE.OrthographicCamera) {
         // adjust the ortho camera position based on zoom changes
         const mouseBefore = new THREE.Vector3(this.#mouse.x, this.#mouse.y, 0);
-        mouseBefore.unproject(this.object);
+        mouseBefore.unproject(this.camera);
 
-        this.object.zoom = Math.max(
+        this.camera.zoom = Math.max(
           this.minZoom,
-          Math.min(this.maxZoom, this.object.zoom / this.#scale),
+          Math.min(this.maxZoom, this.camera.zoom / this.#scale),
         );
-        this.object.updateProjectionMatrix();
+        this.camera.updateProjectionMatrix();
         zoomChanged = true;
 
         const mouseAfter = new THREE.Vector3(this.#mouse.x, this.#mouse.y, 0);
-        mouseAfter.unproject(this.object);
+        mouseAfter.unproject(this.camera);
 
-        this.object.position.sub(mouseAfter).add(mouseBefore);
-        this.object.updateMatrixWorld();
+        this.camera.position.sub(mouseAfter).add(mouseBefore);
+        this.camera.updateMatrixWorld();
 
         newRadius = this.#offset.length();
       } else {
@@ -363,30 +363,30 @@ class OrbitControls extends EventDispatcher<any> {
           // position the orbit target in front of the new camera position
           this.target
             .set(0, 0, -1)
-            .transformDirection(this.object.matrix)
+            .transformDirection(this.camera.matrix)
             .multiplyScalar(newRadius)
-            .add(this.object.position);
+            .add(this.camera.position);
         } else {
           // get the ray and translation plane to compute target
-          _ray.origin.copy(this.object.position);
-          _ray.direction.set(0, 0, -1).transformDirection(this.object.matrix);
+          _ray.origin.copy(this.camera.position);
+          _ray.direction.set(0, 0, -1).transformDirection(this.camera.matrix);
 
           // if the camera is 20 degrees above the horizon then don't adjust the focus target to avoid
           // extremely large values
-          if (Math.abs(this.object.up.dot(_ray.direction)) < TILT_LIMIT) {
-            this.object.lookAt(this.target);
+          if (Math.abs(this.camera.up.dot(_ray.direction)) < TILT_LIMIT) {
+            this.camera.lookAt(this.target);
           } else {
-            _plane.setFromNormalAndCoplanarPoint(this.object.up, this.target);
+            _plane.setFromNormalAndCoplanarPoint(this.camera.up, this.target);
             _ray.intersectPlane(_plane, this.target);
           }
         }
       }
-    } else if (this.object instanceof THREE.OrthographicCamera) {
-      this.object.zoom = Math.max(
+    } else if (this.camera instanceof THREE.OrthographicCamera) {
+      this.camera.zoom = Math.max(
         this.minZoom,
-        Math.min(this.maxZoom, this.object.zoom / this.#scale),
+        Math.min(this.maxZoom, this.camera.zoom / this.#scale),
       );
-      this.object.updateProjectionMatrix();
+      this.camera.updateProjectionMatrix();
       zoomChanged = true;
     }
 
@@ -399,14 +399,14 @@ class OrbitControls extends EventDispatcher<any> {
 
     if (
       zoomChanged ||
-      this.#lastPosition.distanceToSquared(this.object.position) > EPS ||
-      8 * (1 - this.#lastQuaternion.dot(this.object.quaternion)) > EPS ||
+      this.#lastPosition.distanceToSquared(this.camera.position) > EPS ||
+      8 * (1 - this.#lastQuaternion.dot(this.camera.quaternion)) > EPS ||
       this.#lastTargetPosition.distanceToSquared(this.target) > 0
     ) {
       this.dispatchEvent(_changeEvent);
 
-      this.#lastPosition.copy(this.object.position);
-      this.#lastQuaternion.copy(this.object.quaternion);
+      this.#lastPosition.copy(this.camera.position);
+      this.#lastQuaternion.copy(this.camera.quaternion);
       this.#lastTargetPosition.copy(this.target);
 
       return true;
@@ -466,7 +466,7 @@ class OrbitControls extends EventDispatcher<any> {
       this.#v.setFromMatrixColumn(objectMatrix, 1);
     } else {
       this.#v.setFromMatrixColumn(objectMatrix, 0);
-      this.#v.crossVectors(this.object.up, this.#v);
+      this.#v.crossVectors(this.camera.up, this.#v);
     }
 
     this.#v.multiplyScalar(distance);
@@ -477,27 +477,27 @@ class OrbitControls extends EventDispatcher<any> {
   #pan(deltaX: number, deltaY: number) {
     const element = this.domElement;
 
-    if (this.object instanceof THREE.PerspectiveCamera) {
+    if (this.camera instanceof THREE.PerspectiveCamera) {
       // perspective
-      const position = this.object.position;
+      const position = this.camera.position;
       this.#offset.copy(position).sub(this.target);
       let targetDistance = this.#offset.length();
 
       // half of the fov is center to top of screen
-      targetDistance *= Math.tan(((this.object.fov / 2) * Math.PI) / 180.0);
+      targetDistance *= Math.tan(((this.camera.fov / 2) * Math.PI) / 180.0);
 
       // we use only clientHeight here so aspect ratio does not distort speed
-      this.#panLeft((2 * deltaX * targetDistance) / element.clientHeight, this.object.matrix);
-      this.#panUp((2 * deltaY * targetDistance) / element.clientHeight, this.object.matrix);
-    } else if (this.object instanceof THREE.OrthographicCamera) {
+      this.#panLeft((2 * deltaX * targetDistance) / element.clientHeight, this.camera.matrix);
+      this.#panUp((2 * deltaY * targetDistance) / element.clientHeight, this.camera.matrix);
+    } else if (this.camera instanceof THREE.OrthographicCamera) {
       // orthographic
       this.#panLeft(
-        (deltaX * (this.object.right - this.object.left)) / this.object.zoom / element.clientWidth,
-        this.object.matrix,
+        (deltaX * (this.camera.right - this.camera.left)) / this.camera.zoom / element.clientWidth,
+        this.camera.matrix,
       );
       this.#panUp(
-        (deltaY * (this.object.top - this.object.bottom)) / this.object.zoom / element.clientHeight,
-        this.object.matrix,
+        (deltaY * (this.camera.top - this.camera.bottom)) / this.camera.zoom / element.clientHeight,
+        this.camera.matrix,
       );
     } else {
       // camera neither orthographic nor perspective
@@ -508,8 +508,8 @@ class OrbitControls extends EventDispatcher<any> {
 
   #dollyOut(dollyScale: number) {
     if (
-      this.object instanceof THREE.PerspectiveCamera ||
-      this.object instanceof THREE.OrthographicCamera
+      this.camera instanceof THREE.PerspectiveCamera ||
+      this.camera instanceof THREE.OrthographicCamera
     ) {
       this.#scale /= dollyScale;
     } else {
@@ -522,8 +522,8 @@ class OrbitControls extends EventDispatcher<any> {
 
   #dollyIn(dollyScale: number) {
     if (
-      this.object instanceof THREE.PerspectiveCamera ||
-      this.object instanceof THREE.OrthographicCamera
+      this.camera instanceof THREE.PerspectiveCamera ||
+      this.camera instanceof THREE.OrthographicCamera
     ) {
       this.#scale *= dollyScale;
     } else {
@@ -552,8 +552,8 @@ class OrbitControls extends EventDispatcher<any> {
 
     this.#dollyDirection
       .set(this.#mouse.x, this.#mouse.y, 1)
-      .unproject(this.object)
-      .sub(this.object.position)
+      .unproject(this.camera)
+      .sub(this.camera.position)
       .normalize();
   }
 
