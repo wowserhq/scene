@@ -37,7 +37,7 @@
     "three.js"
   ],
   "dependencies": {
-    "@wowserhq/format": "^0.7.0",
+    "@wowserhq/format": "^0.8.0",
     "three": "^0.160.0"
   },
   "devDependencies": {
