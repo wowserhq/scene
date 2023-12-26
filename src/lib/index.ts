@@ -1,3 +1,2 @@
-import { nextFrame, paced, sleep } from './util';
-
-export { nextFrame, paced, sleep };
+export * from './util.js';
+export * from './controls/OrbitControls.js';
