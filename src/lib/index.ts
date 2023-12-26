@@ -1,3 +1,3 @@
-import { nextFrame } from './util';
+import { nextFrame, paced, sleep } from './util';
 
-export { nextFrame };
+export { nextFrame, paced, sleep };
