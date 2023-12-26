@@ -30,7 +30,11 @@
     "prepare": "husky install"
   },
   "keywords": [
-    "wowser"
+    "wowser",
+    "wow",
+    "warcraft",
+    "three",
+    "three.js"
   ],
   "dependencies": {
     "@wowserhq/format": "^0.7.0",
