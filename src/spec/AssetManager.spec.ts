@@ -10,40 +10,40 @@ const createFetchResponse = (status: number, statusText: string, data: ArrayBuff
 
 describe('AssetManager', () => {
   describe('getAsset', () => {
-    test('should return expected asset buffer when fetch succeeds', async () => {
+    test('should return expected asset data when fetch succeeds', async () => {
       const assetManager = new AssetManager('http://example.local', true);
-      const assetBuffer = new ArrayBuffer(7);
+      const assetData = new ArrayBuffer(7);
 
       const mockFetch = vi.fn();
-      mockFetch.mockResolvedValue(createFetchResponse(200, 'Okay', assetBuffer));
+      mockFetch.mockResolvedValue(createFetchResponse(200, 'Okay', assetData));
       globalThis.fetch = mockFetch;
 
-      const returnedAssetBuffer = await assetManager.getAsset('foo');
+      const returnedAssetData = await assetManager.get('foo');
 
-      expect(returnedAssetBuffer).toEqual(assetBuffer);
+      expect(returnedAssetData).toEqual(assetData);
     });
 
     test('should throw when fetch fails', async () => {
       const assetManager = new AssetManager('http://example.local', true);
-      const assetBuffer = new ArrayBuffer(7);
+      const assetData = new ArrayBuffer(7);
 
       const mockFetch = vi.fn();
-      mockFetch.mockResolvedValue(createFetchResponse(404, 'Not Found', assetBuffer));
+      mockFetch.mockResolvedValue(createFetchResponse(404, 'Not Found', assetData));
       globalThis.fetch = mockFetch;
 
-      await expect(assetManager.getAsset('foo')).rejects.toBeInstanceOf(Error);
+      await expect(assetManager.get('foo')).rejects.toBeInstanceOf(Error);
     });
 
     test('should only fetch once for a given asset path', async () => {
       const assetManager = new AssetManager('http://example.local', true);
-      const assetBuffer = new ArrayBuffer(7);
+      const assetData = new ArrayBuffer(7);
 
       const mockFetch = vi.fn();
-      mockFetch.mockResolvedValue(createFetchResponse(200, 'Okay', assetBuffer));
+      mockFetch.mockResolvedValue(createFetchResponse(200, 'Okay', assetData));
       globalThis.fetch = mockFetch;
 
-      await assetManager.getAsset('foo');
-      await assetManager.getAsset('foo');
+      await assetManager.get('foo');
+      await assetManager.get('foo');
 
       expect(mockFetch).toHaveBeenCalledOnce();
     });

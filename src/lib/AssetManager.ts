@@ -1,54 +1,54 @@
 const normalizePath = (path: string) => path.trim().toLowerCase().replaceAll(/\\/g, '/');
 
 /**
- * AssetManager provides an in-memory cache for game assets. Outbound HTTP requests are coalesced
+ * AssetManager provides an in-memory cache for remote assets. Outbound HTTP requests are coalesced
  * into a single request for any given asset path. Assets are cached based on their normalized path
  * name.
  */
 class AssetManager {
   #baseUrl: string;
   #normalizePath: boolean;
-  #cache = new globalThis.Map<string, ArrayBuffer>();
-  #pendingRequests = new globalThis.Map<string, Promise<ArrayBuffer>>();
+  #loaded = new globalThis.Map<string, ArrayBuffer>();
+  #loading = new globalThis.Map<string, Promise<ArrayBuffer>>();
 
   constructor(baseUrl: string, normalizePath = true) {
     this.#baseUrl = baseUrl;
     this.#normalizePath = normalizePath;
   }
 
-  getAsset(path: string) {
+  get(path: string) {
     const cacheKey = normalizePath(path);
 
-    const cachedAsset = this.#cache.get(cacheKey);
-    if (cachedAsset) {
-      return Promise.resolve(cachedAsset);
+    const loaded = this.#loaded.get(cacheKey);
+    if (loaded) {
+      return Promise.resolve(loaded);
     }
 
-    const pendingAssetRequest = this.#pendingRequests.get(cacheKey);
-    if (pendingAssetRequest) {
-      return pendingAssetRequest;
+    const alreadyLoading = this.#loading.get(cacheKey);
+    if (alreadyLoading) {
+      return alreadyLoading;
     }
 
-    const newAssetRequest = this.#getMissingAsset(path, cacheKey);
-    this.#pendingRequests.set(cacheKey, newAssetRequest);
+    const loading = this.#load(path, cacheKey);
+    this.#loading.set(cacheKey, loading);
 
-    return newAssetRequest;
+    return loading;
   }
 
-  async #getMissingAsset(path: string, cacheKey: string) {
+  async #load(path: string, cacheKey: string) {
     const response = await fetch(this.#getFullUrl(path));
 
     // Handle non-2xx responses
     if (!response.ok) {
-      this.#pendingRequests.delete(cacheKey);
+      this.#loading.delete(cacheKey);
 
       throw new Error(`Error fetching asset: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.arrayBuffer();
-    this.#cache.set(cacheKey, data);
+    this.#loaded.set(cacheKey, data);
 
-    this.#pendingRequests.delete(cacheKey);
+    this.#loading.delete(cacheKey);
 
     return data;
   }
