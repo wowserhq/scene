@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/wowserhq/scene/compare/v0.3.0...v0.3.1) (2023-12-27)
+
+
+### Bug Fixes
+
+* **format:** add missing export for FormatManager ([7062c81](https://github.com/wowserhq/scene/commit/7062c8173bc49ec75c21faba0774b7c5f5be0448))
+
 ## [0.3.0](https://github.com/wowserhq/scene/compare/v0.2.1...v0.3.0) (2023-12-27)
 
 
