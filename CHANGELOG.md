@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/wowserhq/scene/compare/v0.3.1...v0.4.0) (2023-12-28)
+
+
+### Features
+
+* **texture:** add TextureManager ([#9](https://github.com/wowserhq/scene/issues/9)) ([6970417](https://github.com/wowserhq/scene/commit/697041762960d28b266671d205eac520bd7f513c))
+
 ## [0.3.1](https://github.com/wowserhq/scene/compare/v0.3.0...v0.3.1) (2023-12-27)
 
 
