@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/wowserhq/scene/compare/v0.4.1...v0.5.0) (2023-12-28)
+
+
+### Features
+
+* add SceneWorker ([#12](https://github.com/wowserhq/scene/issues/12)) ([dbc7b18](https://github.com/wowserhq/scene/commit/dbc7b184581950f0cbf96b1b353c6d5122e86551))
+* **terrain:** add TerrainManager ([#14](https://github.com/wowserhq/scene/issues/14)) ([e95e3bc](https://github.com/wowserhq/scene/commit/e95e3bcfff9806c6af5709e6daadd2fe352445c6))
+
 ## [0.4.1](https://github.com/wowserhq/scene/compare/v0.4.0...v0.4.1) (2023-12-28)
 
 
