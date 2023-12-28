@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/wowserhq/scene/compare/v0.4.0...v0.4.1) (2023-12-28)
+
+
+### Bug Fixes
+
+* **texture:** flag newly created textures for upload ([4b34a05](https://github.com/wowserhq/scene/commit/4b34a05019b833f7b988ac57b216d4ca68e77c07))
+
 ## [0.4.0](https://github.com/wowserhq/scene/compare/v0.3.1...v0.4.0) (2023-12-28)
 
 
