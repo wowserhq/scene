@@ -1,5 +1,5 @@
-import AssetManager from './AssetManager';
-import { normalizePath } from './util';
+import AssetManager from './AssetManager.js';
+import { normalizePath } from './util.js';
 
 interface FormatConstructor<T> {
   new (...args: any[]): T;

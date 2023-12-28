@@ -1,4 +1,4 @@
-import { normalizePath } from './util';
+import { normalizePath } from './util.js';
 
 /**
  * AssetManager provides an in-memory cache for remote assets. Outbound HTTP requests are coalesced
