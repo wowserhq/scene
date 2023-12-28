@@ -77,3 +77,4 @@ class SceneWorker {
 }
 
 export default SceneWorker;
+export { SceneWorker };
