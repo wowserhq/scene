@@ -100,6 +100,9 @@ class TextureManager {
     texture.name = normalizePath(path).split('/').at(-1);
     texture.userData.cacheKey = cacheKey;
 
+    // All newly loaded textures need to be flagged for upload to the GPU
+    texture.needsUpdate = true;
+
     this.#loaded.set(cacheKey, texture);
     this.#loading.delete(cacheKey);
 
