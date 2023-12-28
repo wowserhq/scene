@@ -1,4 +1,4 @@
-const normalizePath = (path: string) => path.trim().toLowerCase().replaceAll(/\\/g, '/');
+import { normalizePath } from './util';
 
 /**
  * AssetManager provides an in-memory cache for remote assets. Outbound HTTP requests are coalesced
