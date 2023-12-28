@@ -1,4 +1,5 @@
 import AssetManager from './AssetManager';
+import { normalizePath } from './util';
 
 interface FormatConstructor<T> {
   new (...args: any[]): T;
@@ -22,7 +23,11 @@ class FormatManager {
     FormatClass: FormatConstructor<T>,
     ...formatConstructorArgs: any[]
   ): Promise<T> {
-    const cacheKey = `${path}:${FormatClass.prototype.constructor.name}:${formatConstructorArgs}`;
+    const cacheKey = [
+      normalizePath(path),
+      FormatClass.prototype.constructor.name,
+      formatConstructorArgs,
+    ].join(':');
 
     const loaded = this.#loaded.get(cacheKey);
     if (loaded) {
