@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/wowserhq/scene/compare/v0.5.0...v0.6.0) (2023-12-29)
+
+
+### Features
+
+* **terrain:** avoid unnecessary matrix recalculation for terrain groups ([74997bf](https://github.com/wowserhq/scene/commit/74997bf368da5b25d3179a81b8e58fdbd02c2a77))
+
 ## [0.5.0](https://github.com/wowserhq/scene/compare/v0.4.1...v0.5.0) (2023-12-28)
 
 
