@@ -35,6 +35,8 @@ class TerrainManager {
   async #loadArea(areaId: number, area: MapArea) {
     const group = new THREE.Group();
     group.name = 'terrain';
+    group.matrixAutoUpdate = false;
+    group.matrixWorldAutoUpdate = false;
 
     for (const chunk of area.chunks) {
       const mesh = await this.#createMesh(chunk);
