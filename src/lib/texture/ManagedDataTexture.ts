@@ -41,7 +41,9 @@ class ManagedDataTexture extends THREE.DataTexture {
   }
 
   dispose() {
-    this.#manager.deref(this.#refId);
+    if (this.#manager.deref(this.#refId) === 0) {
+      super.dispose();
+    }
   }
 }
 

@@ -41,7 +41,9 @@ class ManagedCompressedTexture extends THREE.CompressedTexture {
   }
 
   dispose() {
-    this.#manager.deref(this.#refId);
+    if (this.#manager.deref(this.#refId) === 0) {
+      super.dispose();
+    }
   }
 }
 

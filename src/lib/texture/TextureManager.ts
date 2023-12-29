@@ -63,7 +63,7 @@ class TextureManager {
 
     if (refCount > 0) {
       this.#refs.set(refId, refCount);
-      return;
+      return refCount;
     }
 
     // Dispose
@@ -71,10 +71,11 @@ class TextureManager {
     const texture = this.#loaded.get(refId);
     if (texture) {
       this.#loaded.delete(refId);
-      texture.dispose();
     }
 
     this.#refs.delete(refId);
+
+    return 0;
   }
 
   #ref(refId: string) {
