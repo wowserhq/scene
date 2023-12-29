@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MapChunk, MapArea } from '@wowserhq/format';
 import { createSplatTexture } from './material.js';
 import { createTerrainIndexBuffer, createTerrainVertexBuffer } from './geometry.js';
-import TextureManager from '../TextureManager.js';
+import TextureManager from '../texture/TextureManager.js';
 import TerrainMaterial from './TerrainMaterial.js';
 import TerrainMesh from './TerrainMesh.js';
 
