@@ -12,6 +12,11 @@ class TerrainMesh extends THREE.Mesh {
     this.position.set(position[0], position[1], position[2]);
     this.updateMatrixWorld();
   }
+
+  dispose() {
+    this.geometry.dispose();
+    (this.material as THREE.Material).dispose();
+  }
 }
 
 export default TerrainMesh;

@@ -19,6 +19,18 @@ class TerrainMaterial extends THREE.RawShaderMaterial {
     this.side = THREE.FrontSide;
     this.blending = 0;
   }
+
+  dispose() {
+    // Layer textures
+    for (const texture of this.uniforms.layers.value) {
+      texture.dispose();
+    }
+
+    // Splat texture
+    this.uniforms.splat.value.dispose();
+
+    super.dispose();
+  }
 }
 
 export default TerrainMaterial;
