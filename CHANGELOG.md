@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0](https://github.com/wowserhq/scene/compare/v0.6.0...v0.7.0) (2023-12-29)
+
+
+### Features
+
+* **terrain:** dispose of terrain geometry and materials when no longer in use ([6f5f049](https://github.com/wowserhq/scene/commit/6f5f049d5075bf8dcb99112cc73791896655946a))
+* **terrain:** support removal of loaded terrain ([f9da66f](https://github.com/wowserhq/scene/commit/f9da66fbfc97105c679d5dcd4233d7b904e3ffe3))
+* **texture:** dispose of textures when no longer in use ([#16](https://github.com/wowserhq/scene/issues/16)) ([f316e96](https://github.com/wowserhq/scene/commit/f316e96ccc18e715a4845d4b6e11955d8551edf1))
+
 ## [0.6.0](https://github.com/wowserhq/scene/compare/v0.5.0...v0.6.0) (2023-12-29)
 
 
