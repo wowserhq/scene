@@ -32,6 +32,19 @@ class TerrainManager {
     return loading;
   }
 
+  removeArea(areaId: number) {
+    const group = this.#loadedAreas.get(areaId);
+    if (!group) {
+      return;
+    }
+
+    for (const mesh of group.children) {
+      (mesh as TerrainMesh).dispose();
+    }
+
+    this.#loadedAreas.delete(areaId);
+  }
+
   async #loadArea(areaId: number, area: MapArea) {
     const group = new THREE.Group();
     group.name = 'terrain';
