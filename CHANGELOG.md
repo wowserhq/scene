@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/wowserhq/scene/compare/v0.8.1...v0.9.0) (2023-12-30)
+
+
+### Features
+
+* **controls:** add MapControls ([5da0bf3](https://github.com/wowserhq/scene/commit/5da0bf313b1988cda75ab6f1b906792131f37e6b))
+
 ## [0.8.1](https://github.com/wowserhq/scene/compare/v0.8.0...v0.8.1) (2023-12-30)
 
 
