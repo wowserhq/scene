@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/wowserhq/scene/compare/v0.8.0...v0.8.1) (2023-12-30)
+
+
+### Bug Fixes
+
+* **terrain:** build default vertex buffer on main thread ([a7bfdd2](https://github.com/wowserhq/scene/commit/a7bfdd2d7f3d268e5386f1590a9af7e6a52b45b8))
+
 ## [0.8.0](https://github.com/wowserhq/scene/compare/v0.7.0...v0.8.0) (2023-12-30)
 
 
