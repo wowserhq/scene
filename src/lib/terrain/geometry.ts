@@ -1,4 +1,4 @@
-import { MAP_CHUNK_FACE_COUNT_X, MAP_CHUNK_FACE_COUNT_Y, MapChunk } from '@wowserhq/format';
+import { MapChunk, MAP_CHUNK_FACE_COUNT_X, MAP_CHUNK_FACE_COUNT_Y } from '@wowserhq/format';
 import terrainWorker from './worker.js';
 
 const createTerrainVertexBuffer = (chunk: MapChunk) =>

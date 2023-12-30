@@ -20,6 +20,12 @@ const workerMessageHandler = (event: MessageEvent) => {
   }
 };
 
+const workerSetConstants = (constants: Record<string, any>) => {
+  for (const [key, value] of Object.entries(constants)) {
+    self[key] = value;
+  }
+};
+
 const contextToInlineUrl = (context: Record<any, any>) => {
   const initializer = [];
   for (const [rawKey, rawValue] of Object.entries(context)) {
@@ -35,6 +41,7 @@ const contextToInlineUrl = (context: Record<any, any>) => {
     initializer.push(`self[${key}] = `, value, ';', '\n\n');
   }
 
+  initializer.push(`self['setConstants'] = `, workerSetConstants.toString(), ';', '\n\n');
   initializer.push(`self['onmessage'] = `, workerMessageHandler.toString(), ';', '\n');
 
   const blob = new Blob(initializer, { type: 'text/javascript' });
@@ -45,9 +52,13 @@ class SceneWorker {
   #worker: Worker;
   #pending = new Map<number, { resolve: (value: any) => void; reject: (reason: any) => void }>();
   #nextId = 0;
+  #constants: Record<string, any>;
+  #initialized = false;
+  #initializing: Promise<void>;
 
-  constructor(name: string, context: Record<any, any>) {
+  constructor(name: string, context: Record<any, any>, constants: Record<string, any>) {
     this.#worker = new Worker(contextToInlineUrl(context), { name });
+    this.#constants = constants;
 
     this.#worker.onmessage = (event: MessageEvent) => {
       const id: number = event.data.id;
@@ -63,7 +74,19 @@ class SceneWorker {
     };
   }
 
-  call(name: string, ...args: any[]): Promise<any> {
+  async call(name: string, ...args: any[]): Promise<any> {
+    if (!this.#initialized) {
+      if (!this.#initializing) {
+        this.#initializing = this.#initialize();
+      }
+
+      await this.#initializing;
+    }
+
+    return this.#call(name, args);
+  }
+
+  #call(name: string, args: any[]): Promise<any> {
     const id = this.#nextId++;
 
     const promise = new Promise((resolve, reject) => {
@@ -73,6 +96,15 @@ class SceneWorker {
     this.#worker.postMessage({ id, functionName: name, functionArgs: args });
 
     return promise;
+  }
+
+  async #initialize() {
+    if (this.#constants) {
+      await this.#call('setConstants', [this.#constants]);
+    }
+
+    this.#initialized = true;
+    this.#initializing = null;
   }
 }
 
