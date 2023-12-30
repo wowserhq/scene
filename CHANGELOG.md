@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/wowserhq/scene/compare/v0.7.0...v0.8.0) (2023-12-30)
+
+
+### Features
+
+* **map:** add MapManager ([#18](https://github.com/wowserhq/scene/issues/18)) ([f73d5b1](https://github.com/wowserhq/scene/commit/f73d5b1ea103df16dbfa79aad07ada4d031fc803))
+
 ## [0.7.0](https://github.com/wowserhq/scene/compare/v0.6.0...v0.7.0) (2023-12-29)
 
 
