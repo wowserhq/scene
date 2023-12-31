@@ -52,6 +52,10 @@ class TerrainManager {
     group.matrixWorldAutoUpdate = false;
 
     for (const chunk of area.chunks) {
+      if (chunk.layers.length === 0) {
+        continue;
+      }
+
       const mesh = await this.#createMesh(chunk);
       group.add(mesh);
     }
