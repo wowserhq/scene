@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/wowserhq/scene/compare/v0.9.0...v0.9.1) (2023-12-31)
+
+
+### Bug Fixes
+
+* **terrain:** avoid creating meshes for layerless map chunks ([fcbd544](https://github.com/wowserhq/scene/commit/fcbd544066f5ac3cc88080ba9a52f63f0f5a8fa4))
+
 ## [0.9.0](https://github.com/wowserhq/scene/compare/v0.8.1...v0.9.0) (2023-12-30)
 
 
