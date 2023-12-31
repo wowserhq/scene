@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/wowserhq/scene/compare/v0.9.1...v0.10.0) (2023-12-31)
+
+
+### Features
+
+* treat three as a peer dependency ([518b92f](https://github.com/wowserhq/scene/commit/518b92f5b413b0ddf4600c72c868de4bfd2c8031))
+
 ## [0.9.1](https://github.com/wowserhq/scene/compare/v0.9.0...v0.9.1) (2023-12-31)
 
 
