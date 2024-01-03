@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/wowserhq/scene/compare/v0.12.0...v0.13.0) (2024-01-03)
+
+
+### Features
+
+* **map:** improve doodad loading speed ([a8849bb](https://github.com/wowserhq/scene/commit/a8849bb624600a9896898eca63190108707a36ee))
+
 ## [0.12.0](https://github.com/wowserhq/scene/compare/v0.11.0...v0.12.0) (2024-01-03)
 
 
