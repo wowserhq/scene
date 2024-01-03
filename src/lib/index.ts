@@ -4,6 +4,7 @@ export * from './controls/MapControls.js';
 export * from './AssetManager.js';
 export * from './FormatManager.js';
 export * from './SceneWorker.js';
+export * from './model/ModelManager.js';
 export * from './terrain/TerrainManager.js';
 export * from './terrain/TerrainMesh.js';
 export * from './terrain/TerrainMaterial.js';

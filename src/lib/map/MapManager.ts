@@ -3,6 +3,7 @@ import { Map, MapArea, MAP_CHUNK_HEIGHT, MAP_AREA_COUNT_Y } from '@wowserhq/form
 import FormatManager from '../FormatManager.js';
 import TerrainManager from '../terrain/TerrainManager.js';
 import TextureManager from '../texture/TextureManager.js';
+import DoodadManager from './DoodadManager.js';
 
 class MapManager {
   #mapName: string;
@@ -14,10 +15,12 @@ class MapManager {
 
   #root: THREE.Group;
   #terrainGroups = new globalThis.Map<number, THREE.Group>();
+  #doodadGroups = new globalThis.Map<number, THREE.Group>();
 
   #formatManager: FormatManager;
   #textureManager: TextureManager;
   #terrainManager: TerrainManager;
+  #doodadManager: DoodadManager;
 
   #target = new THREE.Vector2();
   #targetAreaX: number;
@@ -38,6 +41,7 @@ class MapManager {
     this.#formatManager = formatManager;
     this.#textureManager = textureManager;
     this.#terrainManager = new TerrainManager(this.#textureManager);
+    this.#doodadManager = new DoodadManager(this.#formatManager, this.#textureManager);
 
     this.#root = new THREE.Group();
     this.#root.name = this.#mapName;
@@ -113,6 +117,12 @@ class MapManager {
         this.#terrainManager.removeArea(areaId);
       }
 
+      const doodadGroup = this.#doodadGroups.get(areaId);
+      if (doodadGroup) {
+        this.#root.remove(doodadGroup);
+        this.#doodadGroups.delete(areaId);
+      }
+
       this.#loadedAreas.delete(areaId);
     }
 
@@ -148,6 +158,10 @@ class MapManager {
 
       this.#terrainGroups.set(areaId, terrainGroup);
       this.#root.add(terrainGroup);
+
+      const doodadGroup = await this.#doodadManager.getArea(newArea);
+      this.#doodadGroups.set(areaId, doodadGroup);
+      this.#root.add(doodadGroup);
     }
 
     requestAnimationFrame(() => this.#syncAreas().catch((error) => console.error(error)));
