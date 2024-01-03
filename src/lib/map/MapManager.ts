@@ -150,7 +150,11 @@ class MapManager {
         continue;
       }
 
-      const terrainGroup = await this.#terrainManager.getArea(areaId, newArea);
+      const [terrainGroup, doodadGroup] = await Promise.all([
+        this.#terrainManager.getArea(areaId, newArea),
+        this.#doodadManager.getArea(newArea),
+      ]);
+
       const terrainBoundingSphere = new THREE.Box3()
         .setFromObject(terrainGroup)
         .getBoundingSphere(new THREE.Sphere());
@@ -159,7 +163,6 @@ class MapManager {
       this.#terrainGroups.set(areaId, terrainGroup);
       this.#root.add(terrainGroup);
 
-      const doodadGroup = await this.#doodadManager.getArea(newArea);
       this.#doodadGroups.set(areaId, doodadGroup);
       this.#root.add(doodadGroup);
     }
