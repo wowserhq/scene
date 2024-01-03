@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0](https://github.com/wowserhq/scene/compare/v0.10.0...v0.11.0) (2024-01-03)
+
+
+### Features
+
+* **map:** add support for loading map doodads ([35136d5](https://github.com/wowserhq/scene/commit/35136d5a4c53e4944833aaf7f79f00618011c44d))
+* **map:** improve loading times for new map areas ([6011f9a](https://github.com/wowserhq/scene/commit/6011f9a11320803707cef5a060df334af1dad8fb))
+* **map:** reduce frustum culling overhead for doodads ([427c80b](https://github.com/wowserhq/scene/commit/427c80b3cc7884aa3de62e7f8d8d70f5b7c620e2))
+* **model:** apply fog to models ([7bba5b1](https://github.com/wowserhq/scene/commit/7bba5b152a8b656036ef5349a7a2bd729fc2ef30))
+
 ## [0.10.0](https://github.com/wowserhq/scene/compare/v0.9.1...v0.10.0) (2023-12-31)
 
 
