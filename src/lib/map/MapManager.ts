@@ -93,6 +93,13 @@ class MapManager {
         terrainGroup.userData.boundingSphere,
       );
     }
+
+    // Doodad groups
+    for (const doodadGroup of this.#doodadGroups.values()) {
+      doodadGroup.visible = this.#cameraFrustum.intersectsSphere(
+        doodadGroup.userData.boundingSphere,
+      );
+    }
   }
 
   async #syncAreas() {
@@ -162,6 +169,11 @@ class MapManager {
 
       this.#terrainGroups.set(areaId, terrainGroup);
       this.#root.add(terrainGroup);
+
+      const doodadBoundingSphere = new THREE.Box3()
+        .setFromObject(doodadGroup)
+        .getBoundingSphere(new THREE.Sphere());
+      doodadGroup.userData.boundingSphere = doodadBoundingSphere;
 
       this.#doodadGroups.set(areaId, doodadGroup);
       this.#root.add(doodadGroup);
