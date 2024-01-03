@@ -17,24 +17,27 @@ class DoodadManager {
     const group = new THREE.Group();
     group.name = 'doodads';
 
-    for (const doodadDef of area.doodadDefs) {
-      const model = await this.#modelManager.get(doodadDef.name);
+    const doodadDefs = area.doodadDefs;
 
-      model.position.set(
-        doodadDef.mapPosition[0],
-        doodadDef.mapPosition[1],
-        doodadDef.mapPosition[2],
-      );
+    const doodadModels = await Promise.all(
+      doodadDefs.map((doodadDef) => this.#modelManager.get(doodadDef.name)),
+    );
+
+    for (let i = 0; i < doodadDefs.length; i++) {
+      const model = doodadModels[i];
+      const def = doodadDefs[i];
+
+      model.position.set(def.mapPosition[0], def.mapPosition[1], def.mapPosition[2]);
 
       // Def rotation is in degrees
       model.rotation.set(
-        doodadDef.mapRotation[0] * DEG2RAD,
-        doodadDef.mapRotation[1] * DEG2RAD,
-        doodadDef.mapRotation[2] * DEG2RAD,
+        def.mapRotation[0] * DEG2RAD,
+        def.mapRotation[1] * DEG2RAD,
+        def.mapRotation[2] * DEG2RAD,
       );
 
       // Def scale is on all axes and is a fixed precision value
-      model.scale.setScalar(doodadDef.scale / 1024);
+      model.scale.setScalar(def.scale / 1024);
 
       model.updateMatrixWorld();
 
