@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.0](https://github.com/wowserhq/scene/compare/v0.11.0...v0.12.0) (2024-01-03)
+
+
+### Features
+
+* **terrain:** improve terrain loading speed ([a524995](https://github.com/wowserhq/scene/commit/a524995f73ec5e246ed395c248f36c77b7ebc7ec))
+
+
+### Bug Fixes
+
+* **map:** correct z-axis rotation for map doodads ([b17070f](https://github.com/wowserhq/scene/commit/b17070fe9cc4bc6e2520235a17846058b4d01694))
+
 ## [0.11.0](https://github.com/wowserhq/scene/compare/v0.10.0...v0.11.0) (2024-01-03)
 
 
