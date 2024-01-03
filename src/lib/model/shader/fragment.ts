@@ -4,6 +4,8 @@ const FRAGMENT_SHADER_PREAMBLE = `
 precision highp float;
 
 uniform sampler2D textures[2];
+uniform vec3 fogColor;
+uniform vec3 fogParams;
 uniform float alphaRef;
 
 in float vLight;
@@ -68,6 +70,19 @@ void combine_opaque_mod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
 }
 `;
 
+const FRAGMENT_SHADER_FOG = `
+void applyFog(inout vec4 color, float distance) {
+  float fogStart = fogParams.x;
+  float fogEnd = fogParams.y;
+  float fogModifier = fogParams.z;
+
+  float fogFactor = (fogEnd - distance) / (fogEnd - fogStart);
+  fogFactor = clamp(fogFactor * fogModifier, 0.0,  1.0);
+
+  color = vec4(mix(color.rgb, fogColor.rgb, 1.0 - fogFactor), color.a);
+}
+`;
+
 const FRAGMENT_SHADER_MAIN_ALPHATEST = `
 // Alpha test
 if (color.a < alphaRef) {
@@ -80,6 +95,11 @@ const FRAGMENT_SHADER_MAIN_LIGHTING = `
 vec3 lightDiffuse = normalize(vec3(0.25, 0.5, 1.0));
 vec3 lightAmbient = normalize(vec3(0.5, 0.5, 0.5));
 color.rgb *= lightDiffuse * vLight + lightAmbient;
+`;
+
+const FRAGMENT_SHADER_MAIN_FOG = `
+// Apply fog
+applyFog(color, vCameraDistance);
 `;
 
 const createFragmentShader = (textureCount: number, combineFunction: string) => {
@@ -95,6 +115,8 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
   }
 
   shaderChunks.push(FRAGMENT_SHADER_COMBINERS);
+
+  shaderChunks.push(FRAGMENT_SHADER_FOG);
 
   const mainChunks = [];
 
@@ -112,6 +134,8 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
   mainChunks.push(FRAGMENT_SHADER_MAIN_ALPHATEST);
 
   mainChunks.push(FRAGMENT_SHADER_MAIN_LIGHTING);
+
+  mainChunks.push(FRAGMENT_SHADER_MAIN_FOG);
 
   const main = [`void main() {`, mainChunks.map((chunk) => `  ${chunk}`).join('\n'), '}'].join(
     '\n',
