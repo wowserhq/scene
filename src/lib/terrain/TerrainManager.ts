@@ -51,12 +51,10 @@ class TerrainManager {
     group.matrixAutoUpdate = false;
     group.matrixWorldAutoUpdate = false;
 
-    for (const chunk of area.chunks) {
-      if (chunk.layers.length === 0) {
-        continue;
-      }
+    const renderableChunks = area.chunks.filter((chunk) => chunk.layers.length > 0);
+    const meshes = await Promise.all(renderableChunks.map((chunk) => this.#createMesh(chunk)));
 
-      const mesh = await this.#createMesh(chunk);
+    for (const mesh of meshes) {
       group.add(mesh);
     }
 
