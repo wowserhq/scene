@@ -15,7 +15,7 @@ import ModelMesh from './ModelMesh.js';
 import ModelMaterial from './ModelMaterial.js';
 import { getVertexShader } from './shader/vertex.js';
 import { getFragmentShader } from './shader/fragment.js';
-import { M2_MATERIAL_BLEND_MODE, M2_MATERIAL_PASS } from './const.js';
+import { M2_MATERIAL_PASS } from './const.js';
 
 type ModelResources = {
   name: string;
@@ -157,12 +157,17 @@ class ModelManager {
     const textures = await Promise.all(
       m2Textures.map((m2Texture) => this.#createTexture(m2Texture)),
     );
-    const blendMode = M2_MATERIAL_BLEND_MODE[M2_MATERIAL_PASS.PASS_0][batch.material.blend];
-
     const side =
       batch.material.flags & M2_MATERIAL_FLAG.FLAG_TWO_SIDED ? THREE.DoubleSide : THREE.FrontSide;
 
-    return new ModelMaterial(vertexShader, fragmentShader, textures, blendMode, side);
+    return new ModelMaterial(
+      vertexShader,
+      fragmentShader,
+      textures,
+      batch.material.blend,
+      M2_MATERIAL_PASS.PASS_0,
+      side,
+    );
   }
 
   async #createTexture(m2Texture: M2Texture) {
