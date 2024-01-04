@@ -4,8 +4,6 @@ import ModelManager from '../model/ModelManager.js';
 import FormatManager from '../FormatManager.js';
 import TextureManager from '../texture/TextureManager.js';
 
-const DEG2RAD = Math.PI / 180;
-
 class DoodadManager {
   #modelManager: ModelManager;
 
@@ -27,14 +25,8 @@ class DoodadManager {
       const model = doodadModels[i];
       const def = doodadDefs[i];
 
-      model.position.set(def.mapPosition[0], def.mapPosition[1], def.mapPosition[2]);
-
-      // Def rotation is in degrees
-      model.rotation.set(
-        def.mapRotation[0] * DEG2RAD,
-        def.mapRotation[1] * DEG2RAD,
-        def.mapRotation[2] * DEG2RAD,
-      );
+      model.position.set(def.position[0], def.position[1], def.position[2]);
+      model.quaternion.set(def.rotation[0], def.rotation[1], def.rotation[2], def.rotation[3]);
 
       // Def scale is on all axes and is a fixed precision value
       model.scale.setScalar(def.scale / 1024);
