@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/wowserhq/scene/compare/v0.13.0...v0.13.1) (2024-01-04)
+
+
+### Bug Fixes
+
+* **map:** correct rotation of doodads when placing on map ([da74d4b](https://github.com/wowserhq/scene/commit/da74d4b1ed2460705850fd21041626e50ce1e3b5))
+
 ## [0.13.0](https://github.com/wowserhq/scene/compare/v0.12.0...v0.13.0) (2024-01-03)
 
 
