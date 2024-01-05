@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { M2_MATERIAL_BLEND } from '@wowserhq/format';
-import { M2_MATERIAL_TO_THREE_BLEND_MODE, M2_MATERIAL_PASS } from './const.js';
+import { M2_MATERIAL_BLEND_TO_THREE_BLEND, M2_MATERIAL_PASS } from './const.js';
 import { THREE_BLEND_STATE } from '../blend.js';
 
 const DEFAULT_BLEND: M2_MATERIAL_BLEND = M2_MATERIAL_BLEND.BLEND_OPAQUE;
@@ -8,8 +8,8 @@ const DEFAULT_PASS: M2_MATERIAL_PASS = M2_MATERIAL_PASS.PASS_0;
 const DEFAULT_SIDE: THREE.Side = THREE.FrontSide;
 const DEFAULT_ALPHA: number = 1.0;
 
-const getThreeBlendState = (blendMode: M2_MATERIAL_BLEND, pass: M2_MATERIAL_PASS) =>
-  THREE_BLEND_STATE[M2_MATERIAL_TO_THREE_BLEND_MODE[pass][blendMode]];
+const getThreeBlendState = (blend: M2_MATERIAL_BLEND, pass: M2_MATERIAL_PASS) =>
+  THREE_BLEND_STATE[M2_MATERIAL_BLEND_TO_THREE_BLEND[pass][blend]];
 
 class ModelMaterial extends THREE.RawShaderMaterial {
   #blend: M2_MATERIAL_BLEND;

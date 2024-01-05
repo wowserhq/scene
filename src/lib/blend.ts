@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-enum THREE_BLEND_MODE {
+enum THREE_BLEND {
   BLEND_OPAQUE = 0,
   BLEND_ALPHA_KEY,
   BLEND_ALPHA,
@@ -11,49 +11,49 @@ enum THREE_BLEND_MODE {
 }
 
 const THREE_BLEND_STATE = {
-  [THREE_BLEND_MODE.BLEND_OPAQUE]: {
+  [THREE_BLEND.BLEND_OPAQUE]: {
     blending: THREE.NoBlending,
     blendSrc: THREE.OneFactor,
     blendSrcAlpha: THREE.OneFactor,
     blendDst: THREE.ZeroFactor,
     blendDstAlpha: THREE.ZeroFactor,
   },
-  [THREE_BLEND_MODE.BLEND_ALPHA_KEY]: {
+  [THREE_BLEND.BLEND_ALPHA_KEY]: {
     blending: THREE.NoBlending,
     blendSrc: THREE.OneFactor,
     blendSrcAlpha: THREE.OneFactor,
     blendDst: THREE.ZeroFactor,
     blendDstAlpha: THREE.ZeroFactor,
   },
-  [THREE_BLEND_MODE.BLEND_ALPHA]: {
+  [THREE_BLEND.BLEND_ALPHA]: {
     blending: THREE.CustomBlending,
     blendSrc: THREE.SrcAlphaFactor,
     blendSrcAlpha: THREE.OneFactor,
     blendDst: THREE.OneMinusSrcAlphaFactor,
     blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
   },
-  [THREE_BLEND_MODE.BLEND_NO_ALPHA_ADD]: {
+  [THREE_BLEND.BLEND_NO_ALPHA_ADD]: {
     blending: THREE.CustomBlending,
     blendSrc: THREE.OneFactor,
     blendSrcAlpha: THREE.ZeroFactor,
     blendDst: THREE.OneFactor,
     blendDstAlpha: THREE.OneFactor,
   },
-  [THREE_BLEND_MODE.BLEND_ADD]: {
+  [THREE_BLEND.BLEND_ADD]: {
     blending: THREE.CustomBlending,
     blendSrc: THREE.SrcAlphaFactor,
     blendSrcAlpha: THREE.ZeroFactor,
     blendDst: THREE.OneFactor,
     blendDstAlpha: THREE.OneFactor,
   },
-  [THREE_BLEND_MODE.BLEND_MOD]: {
+  [THREE_BLEND.BLEND_MOD]: {
     blending: THREE.CustomBlending,
     blendSrc: THREE.DstColorFactor,
     blendSrcAlpha: THREE.DstAlphaFactor,
     blendDst: THREE.ZeroFactor,
     blendDstAlpha: THREE.ZeroFactor,
   },
-  [THREE_BLEND_MODE.BLEND_MOD2X]: {
+  [THREE_BLEND.BLEND_MOD2X]: {
     blending: THREE.CustomBlending,
     blendSrc: THREE.DstColorFactor,
     blendSrcAlpha: THREE.DstAlphaFactor,
@@ -62,4 +62,4 @@ const THREE_BLEND_STATE = {
   },
 };
 
-export { THREE_BLEND_MODE, THREE_BLEND_STATE };
+export { THREE_BLEND, THREE_BLEND_STATE };
