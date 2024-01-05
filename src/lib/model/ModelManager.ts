@@ -157,8 +157,6 @@ class ModelManager {
     const textures = await Promise.all(
       m2Textures.map((m2Texture) => this.#createTexture(m2Texture)),
     );
-    const side =
-      batch.material.flags & M2_MATERIAL_FLAG.FLAG_TWO_SIDED ? THREE.DoubleSide : THREE.FrontSide;
 
     return new ModelMaterial(
       vertexShader,
@@ -166,7 +164,7 @@ class ModelManager {
       textures,
       batch.material.blend,
       M2_MATERIAL_PASS.PASS_0,
-      side,
+      batch.material.flags,
     );
   }
 
