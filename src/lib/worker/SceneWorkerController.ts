@@ -2,6 +2,12 @@ import { WorkerResponse } from './types.js';
 import { RESPONSE_STATUS } from './const.js';
 
 class SceneWorkerController {
+  #initialized = false;
+  #initializeArgs: any[];
+  #initializing: Promise<void>;
+  #initializingResolve: (value?: any) => void;
+  #initializingReject: (reason?: any) => void;
+
   #worker: Worker;
 
   #nextId = 0;
@@ -9,24 +15,53 @@ class SceneWorkerController {
 
   constructor(createWorker: () => Worker, ...initializeArgs: any[]) {
     this.#worker = createWorker();
+    this.#initializeArgs = initializeArgs;
 
     this.#worker.addEventListener('message', (event: MessageEvent) => {
       this.#handleResponse(event.data);
     });
-
-    this.request('initialize', ...initializeArgs).catch((error) => console.error(error));
   }
 
-  request(func: string, ...args: any[]): Promise<any> {
+  async request(func: string, ...args: any[]): Promise<any> {
+    if (!this.#initialized) {
+      if (this.#initializing) {
+        await this.#initializing;
+      } else {
+        await this.#initialize();
+      }
+    }
+
+    return this.#request(func, args);
+  }
+
+  #request(func: string, args: any[]): Promise<any> {
     const id = this.#nextId++;
 
-    const requestPromise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       this.#pending.set(id, { resolve, reject });
     });
 
     this.#worker.postMessage({ id, func, args });
 
-    return requestPromise;
+    return promise;
+  }
+
+  #initialize() {
+    this.#initializing = new Promise((resolve, reject) => {
+      this.#initializingResolve = resolve;
+      this.#initializingReject = reject;
+    });
+
+    this.#request('initialize', this.#initializeArgs)
+      .then((response) => {
+        this.#initialized = true;
+        this.#initializingResolve(response);
+      })
+      .catch((error) => {
+        this.#initializingReject(error);
+      });
+
+    return this.#initializing;
   }
 
   #handleResponse(response: WorkerResponse) {
