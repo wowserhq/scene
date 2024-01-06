@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { Blp, BLP_IMAGE_FORMAT } from '@wowserhq/format';
+import { BLP_IMAGE_FORMAT } from '@wowserhq/format';
 import ManagedCompressedTexture from './ManagedCompressedTexture.js';
 import ManagedDataTexture from './ManagedDataTexture.js';
-import FormatManager from '../FormatManager.js';
+import TextureLoader from './loader/TextureLoader.js';
 import { AssetHost, normalizePath } from '../asset.js';
+import { TextureSpec } from './loader/types.js';
 
 const THREE_TEXTURE_FORMAT: Record<number, THREE.PixelFormat | THREE.CompressedPixelFormat> = {
   [BLP_IMAGE_FORMAT.IMAGE_DXT1]: THREE.RGBA_S3TC_DXT1_Format,
@@ -14,12 +15,11 @@ const THREE_TEXTURE_FORMAT: Record<number, THREE.PixelFormat | THREE.CompressedP
 
 type TextureManagerOptions = {
   host: AssetHost;
-  formatManager?: FormatManager;
 };
 
 class TextureManager {
   #host: AssetHost;
-  #formatManager: FormatManager;
+  #loader: TextureLoader;
 
   #loaded = new Map<string, THREE.Texture>();
   #loading = new Map<string, Promise<THREE.Texture>>();
@@ -27,7 +27,7 @@ class TextureManager {
 
   constructor(options: TextureManagerOptions) {
     this.#host = options.host;
-    this.#formatManager = options.formatManager ?? new FormatManager({ host: options.host });
+    this.#loader = new TextureLoader({ host: options.host });
   }
 
   get(
@@ -102,50 +102,48 @@ class TextureManager {
     minFilter: THREE.MinificationTextureFilter,
     magFilter: THREE.MagnificationTextureFilter,
   ) {
-    let blp: Blp;
+    let spec: TextureSpec;
     try {
-      blp = await this.#formatManager.get(path, Blp);
+      spec = await this.#loader.loadSpec(path);
     } catch (error) {
       this.#loading.delete(refId);
       throw error;
     }
 
-    const images = blp.getImages();
-    const firstImage = images[0];
-    const imageFormat = firstImage.format;
+    const specFormat = spec.format;
 
-    const threeFormat = THREE_TEXTURE_FORMAT[imageFormat];
+    const threeFormat = THREE_TEXTURE_FORMAT[specFormat];
     if (threeFormat === undefined) {
       this.#loading.delete(refId);
-      throw new Error(`Unsupported texture format: ${imageFormat}`);
+      throw new Error(`Unsupported texture format: ${specFormat}`);
     }
 
     let texture: ManagedCompressedTexture | ManagedDataTexture;
     if (
-      imageFormat === BLP_IMAGE_FORMAT.IMAGE_DXT1 ||
-      imageFormat === BLP_IMAGE_FORMAT.IMAGE_DXT3 ||
-      imageFormat === BLP_IMAGE_FORMAT.IMAGE_DXT5
+      specFormat === BLP_IMAGE_FORMAT.IMAGE_DXT1 ||
+      specFormat === BLP_IMAGE_FORMAT.IMAGE_DXT3 ||
+      specFormat === BLP_IMAGE_FORMAT.IMAGE_DXT5
     ) {
       texture = new ManagedCompressedTexture(
         this,
         refId,
         null,
-        blp.width,
-        blp.height,
+        spec.width,
+        spec.height,
         threeFormat as THREE.CompressedPixelFormat,
       );
-    } else if (imageFormat === BLP_IMAGE_FORMAT.IMAGE_ABGR8888) {
+    } else if (specFormat === BLP_IMAGE_FORMAT.IMAGE_ABGR8888) {
       texture = new ManagedDataTexture(
         this,
         refId,
         null,
-        blp.width,
-        blp.height,
+        spec.width,
+        spec.height,
         threeFormat as THREE.PixelFormat,
       );
     }
 
-    texture.mipmaps = images;
+    texture.mipmaps = spec.mipmaps;
     texture.wrapS = wrapS;
     texture.wrapT = wrapT;
     texture.minFilter = minFilter;
