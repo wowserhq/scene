@@ -1,13 +1,5 @@
 import * as THREE from 'three';
-import {
-  M2_MATERIAL_FLAG,
-  M2_TEXTURE_COMPONENT,
-  M2_TEXTURE_FLAG,
-  M2Batch,
-  M2Model,
-  M2SkinProfile,
-  M2Texture,
-} from '@wowserhq/format';
+import { M2_TEXTURE_COMPONENT, M2_TEXTURE_FLAG } from '@wowserhq/format';
 import TextureManager from '../texture/TextureManager.js';
 import FormatManager from '../FormatManager.js';
 import { normalizePath } from '../util.js';
@@ -16,6 +8,8 @@ import ModelMaterial from './ModelMaterial.js';
 import { getVertexShader } from './shader/vertex.js';
 import { getFragmentShader } from './shader/fragment.js';
 import { M2_MATERIAL_PASS } from './const.js';
+import ModelLoader from './loader/ModelLoader.js';
+import { MaterialSpec, ModelSpec, TextureSpec } from './loader/types.js';
 
 type ModelResources = {
   name: string;
@@ -24,14 +18,14 @@ type ModelResources = {
 };
 
 class ModelManager {
-  #formatManager: FormatManager;
   #textureManager: TextureManager;
+  #loader: ModelLoader;
   #loaded = new globalThis.Map<string, ModelResources>();
   #loading = new globalThis.Map<string, Promise<ModelResources>>();
 
   constructor(formatManager: FormatManager, textureManager: TextureManager) {
-    this.#formatManager = formatManager;
     this.#textureManager = textureManager;
+    this.#loader = new ModelLoader(formatManager.baseUrl, formatManager.normalizePath);
   }
 
   async get(path: string) {
@@ -59,20 +53,13 @@ class ModelManager {
   }
 
   async #loadResources(refId: string, path: string) {
-    const model = await this.#formatManager.get(path, M2Model);
+    const spec = await this.#loader.loadSpec(path);
 
-    const modelBasePath = path.split('.').at(0);
-    const skinProfileIndex = model.skinProfileCount - 1;
-    const skinProfileSuffix = skinProfileIndex.toString().padStart(2, '0');
-    const skinProfilePath = `${modelBasePath}${skinProfileSuffix}.skin`;
-
-    const skinProfile = await this.#formatManager.get(skinProfilePath, M2SkinProfile, model);
-
-    const geometry = await this.#createGeometry(model, skinProfile);
-    const materials = await this.#createMaterials(skinProfile);
+    const geometry = await this.#createGeometry(spec);
+    const materials = await this.#createMaterials(spec);
 
     const resources: ModelResources = {
-      name: model.name,
+      name: spec.name,
       geometry,
       materials,
     };
@@ -83,22 +70,9 @@ class ModelManager {
     return resources;
   }
 
-  #extractVertices(model: M2Model, skinProfile: M2SkinProfile) {
-    const vertexArray = new Uint8Array(skinProfile.vertices.length * 48);
-    const sourceArray = new Uint8Array(model.vertices);
-
-    for (let i = 0, j = 0; i < skinProfile.vertices.length; i++, j += 48) {
-      const vertexIndex = skinProfile.vertices[i];
-      const vertex = sourceArray.subarray(vertexIndex * 48, (vertexIndex + 1) * 48);
-      vertexArray.set(vertex, j);
-    }
-
-    return vertexArray.buffer;
-  }
-
-  async #createGeometry(model: M2Model, skinProfile: M2SkinProfile) {
-    const vertexBuffer = this.#extractVertices(model, skinProfile);
-    const indexBuffer = skinProfile.indices;
+  async #createGeometry(spec: ModelSpec) {
+    const vertexBuffer = spec.geometry.vertexBuffer;
+    const indexBuffer = spec.geometry.indexBuffer;
 
     const geometry = new THREE.BufferGeometry();
 
@@ -132,54 +106,45 @@ class ModelManager {
       new THREE.InterleavedBufferAttribute(texCoord2, 2, 40 / 4, false),
     );
 
-    const index = new THREE.BufferAttribute(indexBuffer, 1, false);
+    const index = new THREE.BufferAttribute(new Uint16Array(indexBuffer), 1, false);
     geometry.setIndex(index);
 
-    for (let i = 0; i < skinProfile.batches.length; i++) {
-      const batch = skinProfile.batches[i];
-      geometry.addGroup(batch.skinSection.indexStart, batch.skinSection.indexCount, i);
+    for (const group of spec.geometry.groups) {
+      geometry.addGroup(group.start, group.count, group.materialIndex);
     }
 
     return geometry;
   }
 
-  #createMaterials(skinProfile: M2SkinProfile) {
-    return Promise.all(skinProfile.batches.map((batch) => this.#createMaterial(batch)));
+  #createMaterials(spec: ModelSpec) {
+    return Promise.all(spec.materials.map((materialSpec) => this.#createMaterial(materialSpec)));
   }
 
-  async #createMaterial(batch: M2Batch) {
-    const coords = batch.textures.map((texture) => texture.textureCoord);
-    const combiners = batch.textures.map((texture) => texture.textureCombiner);
-    const m2Textures = batch.textures.map((texture) => texture.texture);
-
-    const vertexShader = getVertexShader(coords);
-    const fragmentShader = getFragmentShader(combiners);
+  async #createMaterial(spec: MaterialSpec) {
+    const vertexShader = getVertexShader(spec.vertexShader);
+    const fragmentShader = getFragmentShader(spec.fragmentShader);
     const textures = await Promise.all(
-      m2Textures.map((m2Texture) => this.#createTexture(m2Texture)),
+      spec.textures.map((textureSpec) => this.#createTexture(textureSpec)),
     );
 
     return new ModelMaterial(
       vertexShader,
       fragmentShader,
       textures,
-      batch.material.blend,
+      spec.blend,
       M2_MATERIAL_PASS.PASS_0,
-      batch.material.flags,
+      spec.flags,
     );
   }
 
-  async #createTexture(m2Texture: M2Texture) {
+  async #createTexture(spec: TextureSpec) {
     const wrapS =
-      m2Texture.flags & M2_TEXTURE_FLAG.FLAG_WRAP_S
-        ? THREE.RepeatWrapping
-        : THREE.ClampToEdgeWrapping;
+      spec.flags & M2_TEXTURE_FLAG.FLAG_WRAP_S ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
     const wrapT =
-      m2Texture.flags & M2_TEXTURE_FLAG.FLAG_WRAP_T
-        ? THREE.RepeatWrapping
-        : THREE.ClampToEdgeWrapping;
+      spec.flags & M2_TEXTURE_FLAG.FLAG_WRAP_T ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 
-    if (m2Texture.component === M2_TEXTURE_COMPONENT.COMPONENT_NONE) {
-      return this.#textureManager.get(m2Texture.filename, wrapS, wrapT);
+    if (spec.component === M2_TEXTURE_COMPONENT.COMPONENT_NONE) {
+      return this.#textureManager.get(spec.path, wrapS, wrapT);
     }
 
     // TODO handle other component types

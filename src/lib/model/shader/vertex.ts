@@ -1,4 +1,5 @@
 import { M2_TEXTURE_COORD } from '@wowserhq/format';
+import { MODEL_SHADER_VERTEX } from '../types.js';
 
 const VERTEX_SHADER_PREAMBLE = `
 precision highp float;
@@ -94,20 +95,15 @@ const VERTEX_SHADER = {
   DEFAULT: createVertexShader(),
 };
 
-const getVertexShader = (coords: M2_TEXTURE_COORD[]) => {
-  if (coords.length === 0) {
+const getVertexShader = (shader: MODEL_SHADER_VERTEX) => {
+  if (shader === MODEL_SHADER_VERTEX.VERTEX_UNKNOWN) {
     return VERTEX_SHADER.DEFAULT;
-  }
-
-  if (coords.length === 1) {
-    switch (coords[0]) {
-      case M2_TEXTURE_COORD.COORD_T1:
-        return VERTEX_SHADER.T1;
-      case M2_TEXTURE_COORD.COORD_T2:
-        return VERTEX_SHADER.T2;
-      case M2_TEXTURE_COORD.COORD_ENV:
-        return VERTEX_SHADER.ENV;
-    }
+  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_T1) {
+    return VERTEX_SHADER.T1;
+  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_T2) {
+    return VERTEX_SHADER.T2;
+  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_ENV) {
+    return VERTEX_SHADER.ENV;
   }
 
   return VERTEX_SHADER.DEFAULT;

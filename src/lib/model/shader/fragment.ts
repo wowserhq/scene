@@ -1,4 +1,5 @@
 import { M2_TEXTURE_COMBINER } from '@wowserhq/format';
+import { MODEL_SHADER_FRAGMENT } from '../types.js';
 
 const FRAGMENT_SHADER_PREAMBLE = `
 precision highp float;
@@ -152,18 +153,13 @@ const FRAGMENT_SHADER = {
   DEFAULT: createFragmentShader(0, ''),
 };
 
-const getFragmentShader = (combiners: M2_TEXTURE_COMBINER[]) => {
-  if (combiners.length === 0) {
+const getFragmentShader = (shader: MODEL_SHADER_FRAGMENT) => {
+  if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_UNKNOWN) {
     return FRAGMENT_SHADER.DEFAULT;
-  }
-
-  if (combiners.length === 1) {
-    switch (combiners[0]) {
-      case M2_TEXTURE_COMBINER.COMBINER_OPAQUE:
-        return FRAGMENT_SHADER.COMBINER_OPAQUE;
-      case M2_TEXTURE_COMBINER.COMBINER_MOD:
-        return FRAGMENT_SHADER.COMBINER_MOD;
-    }
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_OPAQUE) {
+    return FRAGMENT_SHADER.COMBINER_OPAQUE;
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_MOD) {
+    return FRAGMENT_SHADER.COMBINER_MOD;
   }
 
   return FRAGMENT_SHADER.DEFAULT;
