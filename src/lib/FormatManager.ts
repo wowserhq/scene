@@ -18,6 +18,14 @@ class FormatManager {
     this.#assetManager = assetManager;
   }
 
+  get baseUrl() {
+    return this.#assetManager.baseUrl;
+  }
+
+  get normalizePath() {
+    return this.#assetManager.normalizePath;
+  }
+
   get<T extends Format<T>>(
     path: string,
     FormatClass: FormatConstructor<T>,

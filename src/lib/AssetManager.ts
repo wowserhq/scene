@@ -16,6 +16,14 @@ class AssetManager {
     this.#normalizePath = normalizePath;
   }
 
+  get baseUrl() {
+    return this.#baseUrl;
+  }
+
+  get normalizePath() {
+    return this.#normalizePath;
+  }
+
   get(path: string) {
     const cacheKey = normalizePath(path);
 
