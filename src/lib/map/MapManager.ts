@@ -6,10 +6,13 @@ import TextureManager from '../texture/TextureManager.js';
 import DoodadManager from './DoodadManager.js';
 import { AssetHost } from '../asset.js';
 
+const DEFAULT_VIEW_DISTANCE = 1277.0;
+
 type MapManagerOptions = {
   host: AssetHost;
   formatManager?: FormatManager;
   textureManager?: TextureManager;
+  viewDistance?: number;
 };
 
 class MapManager {
@@ -35,13 +38,17 @@ class MapManager {
   #targetChunkX: number;
   #targetChunkY: number;
 
-  #viewDistance = 577.0;
+  #viewDistance = DEFAULT_VIEW_DISTANCE;
   #projScreenMatrix = new THREE.Matrix4();
   #cameraFrustum = new THREE.Frustum();
 
   #desiredAreas = new Set<number>();
 
   constructor(options: MapManagerOptions) {
+    if (options.viewDistance) {
+      this.#viewDistance = options.viewDistance;
+    }
+
     this.#formatManager = new FormatManager({ host: options.host });
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
 
