@@ -1,5 +1,6 @@
 import SceneWorkerController from '../../worker/SceneWorkerController.js';
 import { ModelSpec } from './types.js';
+import { AssetHost } from '../../asset.js';
 
 const createWorker = () =>
   new Worker(new URL('./worker.js', import.meta.url), {
@@ -7,9 +8,13 @@ const createWorker = () =>
     type: 'module',
   });
 
+type ModelLoaderOptions = {
+  host: AssetHost;
+};
+
 class ModelLoader extends SceneWorkerController {
-  constructor(baseUrl: string, normalizePath: boolean = false) {
-    super(createWorker, baseUrl, normalizePath);
+  constructor(options: ModelLoaderOptions) {
+    super(createWorker, { host: options.host });
   }
 
   loadSpec(path: string): Promise<ModelSpec> {

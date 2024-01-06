@@ -4,6 +4,13 @@ import FormatManager from '../FormatManager.js';
 import TerrainManager from '../terrain/TerrainManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import DoodadManager from './DoodadManager.js';
+import { AssetHost } from '../asset.js';
+
+type MapManagerOptions = {
+  host: AssetHost;
+  formatManager?: FormatManager;
+  textureManager?: TextureManager;
+};
 
 class MapManager {
   #mapName: string;
@@ -28,28 +35,28 @@ class MapManager {
   #targetChunkX: number;
   #targetChunkY: number;
 
-  #viewDistance = 1277.0;
+  #viewDistance = 577.0;
   #projScreenMatrix = new THREE.Matrix4();
   #cameraFrustum = new THREE.Frustum();
 
   #desiredAreas = new Set<number>();
 
-  constructor(mapName: string, formatManager: FormatManager, textureManager: TextureManager) {
-    this.#mapName = mapName;
-    this.#mapDir = `world/maps/${mapName}`;
+  constructor(options: MapManagerOptions) {
+    this.#formatManager = new FormatManager({ host: options.host });
+    this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
 
-    this.#formatManager = formatManager;
-    this.#textureManager = textureManager;
-    this.#terrainManager = new TerrainManager(this.#textureManager);
-    this.#doodadManager = new DoodadManager(this.#formatManager, this.#textureManager);
+    this.#terrainManager = new TerrainManager({
+      host: options.host,
+      textureManager: this.#textureManager,
+    });
+    this.#doodadManager = new DoodadManager({
+      host: options.host,
+      textureManager: this.#textureManager,
+    });
 
     this.#root = new THREE.Group();
-    this.#root.name = this.#mapName;
     this.#root.matrixAutoUpdate = false;
     this.#root.matrixWorldAutoUpdate = false;
-
-    this.#loadMap().catch((error) => console.error(error));
-    this.#syncAreas().catch((error) => console.error(error));
   }
 
   get mapMame() {
@@ -58,6 +65,18 @@ class MapManager {
 
   get root() {
     return this.#root;
+  }
+
+  load(mapName: string) {
+    this.#mapName = mapName;
+    this.#mapDir = `world/maps/${mapName}`;
+
+    this.#root.name = `map:${mapName}`;
+
+    this.#loadMap().catch((error) => console.error(error));
+    this.#syncAreas().catch((error) => console.error(error));
+
+    return this;
   }
 
   setTarget(x: number, y: number) {

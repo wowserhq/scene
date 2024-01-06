@@ -2,19 +2,21 @@ import { M2Batch, M2Model, M2SkinProfile } from '@wowserhq/format';
 import { ModelSpec } from './types.js';
 import { getFragmentShader, getVertexShader } from './util.js';
 import SceneWorker from '../../worker/SceneWorker.js';
-import { normalizePath } from '../../util.js';
+import { AssetHost, loadAsset } from '../../asset.js';
+
+type ModelLoaderWorkerOptions = {
+  host: AssetHost;
+};
 
 class ModelLoaderWorker extends SceneWorker {
-  #baseUrl: string;
-  #normalizePath: boolean;
+  #host: AssetHost;
 
-  initialize(baseUrl: string, normalizePath: boolean) {
-    this.#baseUrl = baseUrl;
-    this.#normalizePath = normalizePath;
+  initialize(options: ModelLoaderWorkerOptions) {
+    this.#host = options.host;
   }
 
   async loadSpec(path: string) {
-    const modelData = await this.#loadData(path);
+    const modelData = await loadAsset(this.#host, path);
     const model = new M2Model().load(modelData);
 
     const modelBasePath = path.split('.').at(0);
@@ -22,7 +24,7 @@ class ModelLoaderWorker extends SceneWorker {
     const skinProfileSuffix = skinProfileIndex.toString().padStart(2, '0');
     const skinProfilePath = `${modelBasePath}${skinProfileSuffix}.skin`;
 
-    const skinProfileData = await this.#loadData(skinProfilePath);
+    const skinProfileData = await loadAsset(this.#host, skinProfilePath);
     const skinProfile = new M2SkinProfile(model).load(skinProfileData);
 
     const geometry = this.#createGeometrySpec(model, skinProfile);
@@ -37,17 +39,6 @@ class ModelLoaderWorker extends SceneWorker {
     const transfer = [spec.geometry.vertexBuffer, spec.geometry.indexBuffer];
 
     return [spec, transfer];
-  }
-
-  async #loadData(path: string) {
-    const response = await fetch(this.#getFullUrl(path));
-
-    // Handle non-2xx responses
-    if (!response.ok) {
-      throw new Error(`Error fetching data: ${response.status} ${response.statusText}`);
-    }
-
-    return response.arrayBuffer();
   }
 
   #extractVertices(model: M2Model, skinProfile: M2SkinProfile) {
@@ -108,11 +99,6 @@ class ModelLoaderWorker extends SceneWorker {
       vertexShader,
       fragmentShader,
     };
-  }
-
-  #getFullUrl(path: string) {
-    const urlPath = this.#normalizePath ? normalizePath(path) : path;
-    return `${this.#baseUrl}/${urlPath}`;
   }
 }
 

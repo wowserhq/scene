@@ -1,5 +1,4 @@
-import AssetManager from './AssetManager.js';
-import { normalizePath } from './util.js';
+import { AssetHost, loadAsset, normalizePath } from './asset.js';
 
 interface FormatConstructor<T> {
   new (...args: any[]): T;
@@ -9,21 +8,18 @@ interface Format<T> {
   load: (data: ArrayBuffer) => T;
 }
 
+type FormatManagerOptions = {
+  host: AssetHost;
+};
+
 class FormatManager {
-  #assetManager: AssetManager;
+  #host: AssetHost;
+
   #loaded = new Map<string, any>();
   #loading = new Map<string, Promise<any>>();
 
-  constructor(assetManager: AssetManager) {
-    this.#assetManager = assetManager;
-  }
-
-  get baseUrl() {
-    return this.#assetManager.baseUrl;
-  }
-
-  get normalizePath() {
-    return this.#assetManager.normalizePath;
+  constructor(options: FormatManagerOptions) {
+    this.#host = options.host;
   }
 
   get<T extends Format<T>>(
@@ -61,7 +57,7 @@ class FormatManager {
   ): Promise<T> {
     let instance: T;
     try {
-      const data = await this.#assetManager.get(path);
+      const data = await loadAsset(this.#host, path);
       instance = new FormatClass(...formatConstructorArgs).load(data);
 
       this.#loaded.set(cacheKey, instance);

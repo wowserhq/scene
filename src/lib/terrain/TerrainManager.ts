@@ -5,14 +5,20 @@ import { createTerrainIndexBuffer, createTerrainVertexBuffer } from './geometry.
 import TextureManager from '../texture/TextureManager.js';
 import TerrainMaterial from './TerrainMaterial.js';
 import TerrainMesh from './TerrainMesh.js';
+import { AssetHost } from '../asset.js';
+
+type TerrainManagerOptions = {
+  host: AssetHost;
+  textureManager?: TextureManager;
+};
 
 class TerrainManager {
   #textureManager: TextureManager;
   #loadedAreas = new globalThis.Map<number, THREE.Group>();
   #loadingAreas = new globalThis.Map<number, Promise<THREE.Group>>();
 
-  constructor(textureManager: TextureManager) {
-    this.#textureManager = textureManager;
+  constructor(options: TerrainManagerOptions) {
+    this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
   }
 
   getArea(areaId: number, area: MapArea): Promise<THREE.Group> {

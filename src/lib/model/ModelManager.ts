@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { M2_TEXTURE_COMPONENT, M2_TEXTURE_FLAG } from '@wowserhq/format';
 import TextureManager from '../texture/TextureManager.js';
-import FormatManager from '../FormatManager.js';
-import { normalizePath } from '../util.js';
+import { AssetHost, normalizePath } from '../asset.js';
 import ModelMesh from './ModelMesh.js';
 import ModelMaterial from './ModelMaterial.js';
 import { getVertexShader } from './shader/vertex.js';
@@ -17,15 +16,24 @@ type ModelResources = {
   materials: THREE.Material[];
 };
 
+type ModelManagerOptions = {
+  host: AssetHost;
+  textureManager?: TextureManager;
+};
+
 class ModelManager {
+  #host: AssetHost;
   #textureManager: TextureManager;
+
   #loader: ModelLoader;
   #loaded = new globalThis.Map<string, ModelResources>();
   #loading = new globalThis.Map<string, Promise<ModelResources>>();
 
-  constructor(formatManager: FormatManager, textureManager: TextureManager) {
-    this.#textureManager = textureManager;
-    this.#loader = new ModelLoader(formatManager.baseUrl, formatManager.normalizePath);
+  constructor(options: ModelManagerOptions) {
+    this.#host = options.host;
+
+    this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
+    this.#loader = new ModelLoader({ host: options.host });
   }
 
   async get(path: string) {
