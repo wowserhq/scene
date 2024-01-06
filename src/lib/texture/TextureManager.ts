@@ -3,7 +3,7 @@ import { Blp, BLP_IMAGE_FORMAT } from '@wowserhq/format';
 import ManagedCompressedTexture from './ManagedCompressedTexture.js';
 import ManagedDataTexture from './ManagedDataTexture.js';
 import FormatManager from '../FormatManager.js';
-import { normalizePath } from '../util.js';
+import { AssetHost, normalizePath } from '../asset.js';
 
 const THREE_TEXTURE_FORMAT: Record<number, THREE.PixelFormat | THREE.CompressedPixelFormat> = {
   [BLP_IMAGE_FORMAT.IMAGE_DXT1]: THREE.RGBA_S3TC_DXT1_Format,
@@ -12,14 +12,22 @@ const THREE_TEXTURE_FORMAT: Record<number, THREE.PixelFormat | THREE.CompressedP
   [BLP_IMAGE_FORMAT.IMAGE_ABGR8888]: THREE.RGBAFormat,
 };
 
+type TextureManagerOptions = {
+  host: AssetHost;
+  formatManager?: FormatManager;
+};
+
 class TextureManager {
+  #host: AssetHost;
   #formatManager: FormatManager;
+
   #loaded = new Map<string, THREE.Texture>();
   #loading = new Map<string, Promise<THREE.Texture>>();
   #refs = new Map<string, number>();
 
-  constructor(formatManager: FormatManager) {
-    this.#formatManager = formatManager;
+  constructor(options: TextureManagerOptions) {
+    this.#host = options.host;
+    this.#formatManager = options.formatManager ?? new FormatManager({ host: options.host });
   }
 
   get(

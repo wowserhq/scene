@@ -1,14 +1,25 @@
 import * as THREE from 'three';
 import { MapArea } from '@wowserhq/format';
 import ModelManager from '../model/ModelManager.js';
-import FormatManager from '../FormatManager.js';
 import TextureManager from '../texture/TextureManager.js';
+import { AssetHost } from '../asset.js';
+
+type DoodadManagerOptions = {
+  host: AssetHost;
+  textureManager?: TextureManager;
+};
 
 class DoodadManager {
+  #host: AssetHost;
   #modelManager: ModelManager;
 
-  constructor(formatManager: FormatManager, textureManager: TextureManager) {
-    this.#modelManager = new ModelManager(formatManager, textureManager);
+  constructor(options: DoodadManagerOptions) {
+    this.#host = options.host;
+
+    this.#modelManager = new ModelManager({
+      host: options.host,
+      textureManager: options.textureManager,
+    });
   }
 
   async getArea(area: MapArea) {
