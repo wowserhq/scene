@@ -5,11 +5,10 @@
   "author": "Wowser Contributors",
   "repository": "github:wowserhq/scene",
   "license": "MIT",
-  "main": "./dist/cjs/index.js",
+  "type": "module",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
-    "require": "./dist/cjs/index.js",
     "import": "./dist/esm/index.js",
     "types": "./dist/types/index.d.ts"
   },
@@ -17,12 +16,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run clean && npm run test && npm run build:cjs && npm run build:esm && npm run build:types && npm run build:package",
-    "build:cjs": "tsc --module commonjs --moduleResolution node --outDir ./dist/cjs",
-    "build:esm": "tsc --module es2022 --outDir ./dist/esm",
-    "build:types": "tsc --module es2022 --emitDeclarationOnly --declaration --declarationDir ./dist/types",
-    "build:package": "node ./script/build-package.js",
-    "clean": "node ./script/clean.js",
+    "build": "npm run clean && npm run test && npm run build:esm && npm run build:types",
+    "build:esm": "tsc --outDir ./dist/esm",
+    "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir ./dist/types",
+    "clean": "node ./script/clean.mjs",
     "format": "prettier ./src/**/* --write",
     "lint": "eslint --ignore-path .gitignore",
     "lint:commit": "commitlint --edit",
