@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.14.0](https://github.com/wowserhq/scene/compare/v0.13.1...v0.14.0) (2024-01-06)
+
+
+### Features
+
+* **build:** remove commonjs build from published package ([#29](https://github.com/wowserhq/scene/issues/29)) ([fac62a2](https://github.com/wowserhq/scene/commit/fac62a2b5699d8a4d107da8e99f552b2ed2b1cb4))
+* improve manager config ([#31](https://github.com/wowserhq/scene/issues/31)) ([296942b](https://github.com/wowserhq/scene/commit/296942b198a932c930264db2641b058acbe3a4c7))
+* **map:** add option to control view distance for maps ([99c57d1](https://github.com/wowserhq/scene/commit/99c57d11bfd11cd4ee31b8e8e8f4bedabe6e2a73))
+* **model:** handle depth test and depth write material flags ([92262ae](https://github.com/wowserhq/scene/commit/92262aee2b7f09fe3e3c6935029edf740b6fb95d))
+* **model:** improve alpha test handling in model materials ([8a9bdc6](https://github.com/wowserhq/scene/commit/8a9bdc63bee00fcaaf30e9d4545d7eb1f72f6e97))
+* **model:** move model loading into worker ([#30](https://github.com/wowserhq/scene/issues/30)) ([1b11362](https://github.com/wowserhq/scene/commit/1b11362bf584f2a0203ee421f4a5da24d8696824))
+* **texture:** move texture loading into worker ([#32](https://github.com/wowserhq/scene/issues/32)) ([28af560](https://github.com/wowserhq/scene/commit/28af560d4c15b92632044678aaf310bc07f2e0d2))
+
 ## [0.13.1](https://github.com/wowserhq/scene/compare/v0.13.0...v0.13.1) (2024-01-04)
 
 
