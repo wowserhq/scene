@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/wowserhq/scene/compare/v0.14.0...v0.15.0) (2024-01-07)
+
+
+### Features
+
+* **map:** move map loading into worker ([#33](https://github.com/wowserhq/scene/issues/33)) ([86189e5](https://github.com/wowserhq/scene/commit/86189e5e78cf3f7aaf3e01649fbe6133a5817ff5))
+
 ## [0.14.0](https://github.com/wowserhq/scene/compare/v0.13.1...v0.14.0) (2024-01-06)
 
 
