@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { fragmentShader, vertexShader } from './shaders.js';
+import vertexShader from './shader/vertex.js';
+import fragmentShader from './shader/fragment.js';
 
 class TerrainMaterial extends THREE.RawShaderMaterial {
   constructor(layerCount: number, layerTextures: THREE.Texture[], splatTexture: THREE.Texture) {
