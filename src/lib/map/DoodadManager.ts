@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { MapArea } from '@wowserhq/format';
 import ModelManager from '../model/ModelManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
+import { MapAreaSpec } from './loader/types.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;
@@ -22,7 +22,7 @@ class DoodadManager {
     });
   }
 
-  async getArea(area: MapArea) {
+  async getArea(area: MapAreaSpec) {
     const group = new THREE.Group();
     group.name = 'doodads';
 

@@ -1,16 +1,16 @@
 import * as THREE from 'three';
-import { Map, MapArea, MAP_CHUNK_HEIGHT, MAP_AREA_COUNT_Y } from '@wowserhq/format';
-import FormatManager from '../FormatManager.js';
-import TerrainManager from '../terrain/TerrainManager.js';
+import { Map, MAP_CHUNK_HEIGHT, MAP_AREA_COUNT_Y } from '@wowserhq/format';
+import TerrainManager from './terrain/TerrainManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import DoodadManager from './DoodadManager.js';
 import { AssetHost } from '../asset.js';
+import MapLoader from './loader/MapLoader.js';
+import { MapAreaSpec, MapSpec } from './loader/types.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
 
 type MapManagerOptions = {
   host: AssetHost;
-  formatManager?: FormatManager;
   textureManager?: TextureManager;
   viewDistance?: number;
 };
@@ -18,16 +18,16 @@ type MapManagerOptions = {
 class MapManager {
   #mapName: string;
   #mapDir: string;
-  #map: Map;
+  #map: MapSpec;
 
-  #loadingAreas = new globalThis.Map<number, Promise<MapArea>>();
-  #loadedAreas = new globalThis.Map<number, MapArea>();
+  #loader: MapLoader;
+  #loadingAreas = new globalThis.Map<number, Promise<MapAreaSpec>>();
+  #loadedAreas = new globalThis.Map<number, MapAreaSpec>();
 
   #root: THREE.Group;
   #terrainGroups = new globalThis.Map<number, THREE.Group>();
   #doodadGroups = new globalThis.Map<number, THREE.Group>();
 
-  #formatManager: FormatManager;
   #textureManager: TextureManager;
   #terrainManager: TerrainManager;
   #doodadManager: DoodadManager;
@@ -49,8 +49,8 @@ class MapManager {
       this.#viewDistance = options.viewDistance;
     }
 
-    this.#formatManager = new FormatManager({ host: options.host });
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
+    this.#loader = new MapLoader({ host: options.host });
 
     this.#terrainManager = new TerrainManager({
       host: options.host,
@@ -250,7 +250,7 @@ class MapManager {
 
   async #loadMap() {
     const mapPath = `${this.#mapDir}/${this.#mapName}.wdt`;
-    this.#map = await this.#formatManager.get(mapPath, Map);
+    this.#map = await this.#loader.loadMapSpec(mapPath);
   }
 
   #getArea(areaId: number) {
@@ -272,13 +272,15 @@ class MapManager {
 
   async #loadArea(areaId: number) {
     const { areaX, areaY } = this.#getAreaIndex(areaId);
-    const areaPath = `${this.#mapDir}/${this.#mapName}_${areaY}_${areaX}.adt`;
-    const area = await this.#formatManager.get(areaPath, MapArea, this.#map.layerSplatDepth);
 
-    this.#loadedAreas.set(areaId, area);
+    const mapPath = `${this.#mapDir}/${this.#mapName}.wdt`;
+    const areaPath = `${this.#mapDir}/${this.#mapName}_${areaY}_${areaX}.adt`;
+    const areaSpec = await this.#loader.loadAreaSpec(mapPath, areaPath);
+
+    this.#loadedAreas.set(areaId, areaSpec);
     this.#loadingAreas.delete(areaId);
 
-    return area;
+    return areaSpec;
   }
 }
 

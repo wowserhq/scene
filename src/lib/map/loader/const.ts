@@ -8,7 +8,7 @@ import {
   MAP_CHUNK_WIDTH,
 } from '@wowserhq/format';
 
-const createDefaultTerrainVertexBuffer = () => {
+const DEFAULT_TERRAIN_VERTEX_BUFFER = (() => {
   // Vertex coordinates for x-axis (forward axis)
   const vxe = new Float32Array(MAP_CHUNK_FACE_COUNT_X + 1);
   const vxo = new Float32Array(MAP_CHUNK_FACE_COUNT_X);
@@ -55,10 +55,6 @@ const createDefaultTerrainVertexBuffer = () => {
   }
 
   return vertexBuffer;
-};
+})();
 
-const constants = {
-  DEFAULT_TERRAIN_VERTEX_BUFFER: createDefaultTerrainVertexBuffer(),
-};
-
-export default constants;
+export { DEFAULT_TERRAIN_VERTEX_BUFFER };
