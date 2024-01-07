@@ -23,7 +23,7 @@ float calculateFogFactor(in vec4 params, in float distance) {
 
   float step = 1.0 / (end - start);
   float base = max((distance * -(multiplier * step)) + (end * step), 0.0);
-  float factor = 1.0 - min(pow(base, density), 1.0);
+  float factor = 1.0 - clamp(pow(base, density), 0.0, 1.0);
 
   return factor;
 }
