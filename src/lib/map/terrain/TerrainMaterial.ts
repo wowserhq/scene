@@ -10,7 +10,7 @@ class TerrainMaterial extends THREE.RawShaderMaterial {
       layers: { value: layerTextures },
       splat: { value: splatTexture },
       fogColor: { value: new THREE.Color(0.25, 0.5, 0.8) },
-      fogParams: { value: new THREE.Vector3(0.0, 1066.0, 1.0) },
+      fogParams: { value: new THREE.Vector4(0.0, 1066.0, 1.0, 1.0) },
     };
 
     this.vertexShader = vertexShader;

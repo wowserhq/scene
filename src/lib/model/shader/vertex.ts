@@ -8,12 +8,28 @@ uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 cameraPosition;
+uniform vec4 fogParams;
 
 in vec3 position;
 in vec3 normal;
 
 out float vLight;
-out float vCameraDistance;
+out float vFogFactor;
+`;
+
+const VERTEX_SHADER_FOG = `
+float calculateFogFactor(in vec4 params, in float distance) {
+  float start = params.x;
+  float end = params.y;
+  float density = params.z;
+  float multiplier = params.w;
+
+  float step = 1.0 / (end - start);
+  float base = max((distance * -(multiplier * step)) + (end * step), 0.0);
+  float factor = 1.0 - min(pow(base, density), 1.0);
+
+  return factor;
+}
 `;
 
 const VERTEX_SHADER_MAIN_LIGHTING = `
@@ -22,10 +38,11 @@ vec3 lightDirection = vec3(-1, -1, -1);
 vLight = dot(normal, -normalize(lightDirection));
 `;
 
-const VERTEX_SHADER_MAIN_DISTANCE = `
+const VERTEX_SHADER_MAIN_FOG = `
 // Calculate camera distance for fog coloring in fragment shader
 vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-vCameraDistance = distance(cameraPosition, worldPosition.xyz);
+float cameraDistance = distance(cameraPosition, worldPosition.xyz);
+vFogFactor = calculateFogFactor(fogParams, cameraDistance);
 `;
 
 const VERTEX_SHADER_MAIN_POSITION = `
@@ -36,6 +53,8 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   const shaderChunks = [];
 
   shaderChunks.push(VERTEX_SHADER_PREAMBLE);
+
+  shaderChunks.push(VERTEX_SHADER_FOG);
 
   if (texCoord1 === M2_TEXTURE_COORD.COORD_T1 || texCoord2 === M2_TEXTURE_COORD.COORD_T1) {
     shaderChunks.push(`in vec2 texCoord1;`);
@@ -72,7 +91,7 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   }
 
   mainChunks.push(VERTEX_SHADER_MAIN_LIGHTING);
-  mainChunks.push(VERTEX_SHADER_MAIN_DISTANCE);
+  mainChunks.push(VERTEX_SHADER_MAIN_FOG);
   mainChunks.push(VERTEX_SHADER_MAIN_POSITION);
 
   const main = [`void main() {`, mainChunks.map((chunk) => `  ${chunk}`).join('\n'), '}'].join(

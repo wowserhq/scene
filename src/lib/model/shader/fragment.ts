@@ -6,11 +6,10 @@ precision highp float;
 
 uniform sampler2D textures[2];
 uniform vec3 fogColor;
-uniform vec3 fogParams;
 uniform float alphaRef;
 
 in float vLight;
-in float vCameraDistance;
+in float vFogFactor;
 
 out vec4 color;
 `;
@@ -72,15 +71,8 @@ void combine_opaque_mod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
 `;
 
 const FRAGMENT_SHADER_FOG = `
-void applyFog(inout vec4 color, float distance) {
-  float fogStart = fogParams.x;
-  float fogEnd = fogParams.y;
-  float fogModifier = fogParams.z;
-
-  float fogFactor = (fogEnd - distance) / (fogEnd - fogStart);
-  fogFactor = clamp(fogFactor * fogModifier, 0.0,  1.0);
-
-  color = vec4(mix(color.rgb, fogColor.rgb, 1.0 - fogFactor), color.a);
+void applyFog(inout vec4 color, in vec3 fogColor, in float factor) {
+  color = vec4(mix(color.rgb, fogColor.rgb, factor), color.a);
 }
 `;
 
@@ -100,7 +92,7 @@ color.rgb *= lightDiffuse * vLight + lightAmbient;
 
 const FRAGMENT_SHADER_MAIN_FOG = `
 // Apply fog
-applyFog(color, vCameraDistance);
+applyFog(color, fogColor, vFogFactor);
 `;
 
 const createFragmentShader = (textureCount: number, combineFunction: string) => {

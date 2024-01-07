@@ -5,6 +5,7 @@ uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 cameraPosition;
+uniform vec4 fogParams;
 
 in vec3 position;
 in vec3 normal;
@@ -12,7 +13,20 @@ in vec3 normal;
 out vec2 layerCoord;
 out vec2 splatCoord;
 out float light;
-out float cameraDistance;
+out float fogFactor;
+
+float calculateFogFactor(in vec4 params, in float distance) {
+  float start = params.x;
+  float end = params.y;
+  float density = params.z;
+  float multiplier = params.w;
+
+  float step = 1.0 / (end - start);
+  float base = max((distance * -(multiplier * step)) + (end * step), 0.0);
+  float factor = 1.0 - min(pow(base, density), 1.0);
+
+  return factor;
+}
 
 void main() {
   // Terrain tileset textures repeat 8 times over the terrain chunk
@@ -29,7 +43,10 @@ void main() {
 
   // Calculate camera distance for fog coloring in fragment shader
   vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-  cameraDistance = distance(cameraPosition, worldPosition.xyz);
+  float cameraDistance = distance(cameraPosition, worldPosition.xyz);
+
+  // Calculate fog factor
+  fogFactor = calculateFogFactor(fogParams, cameraDistance);
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
@@ -42,25 +59,16 @@ uniform int layerCount;
 uniform sampler2D layers[4];
 uniform sampler2D splat;
 uniform vec3 fogColor;
-uniform vec3 fogParams;
 
 in vec2 layerCoord;
 in vec2 splatCoord;
 in float light;
-in float cameraDistance;
+in float fogFactor;
 
 out vec4 color;
 
 vec4 applyFog(vec4 color) {
-  float fogStart = fogParams.x;
-  float fogEnd = fogParams.y;
-  float fogModifier = fogParams.z;
-
-  float fogFactor = (fogEnd - cameraDistance) / (fogEnd - fogStart);
-  fogFactor = clamp(fogFactor * fogModifier, 0.0,  1.0);
-
-  vec4 mixed = vec4(mix(color.rgb, fogColor.rgb, 1.0 - fogFactor), color.a);
-
+  vec4 mixed = vec4(mix(color.rgb, fogColor.rgb, fogFactor), color.a);
   return mixed;
 }
 
