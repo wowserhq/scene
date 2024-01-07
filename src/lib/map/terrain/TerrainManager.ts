@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { MapChunk, MapArea } from '@wowserhq/format';
-import { createSplatTexture } from './material.js';
-import { createTerrainIndexBuffer, createTerrainVertexBuffer } from './geometry.js';
-import TextureManager from '../texture/TextureManager.js';
+import TextureManager from '../../texture/TextureManager.js';
 import TerrainMaterial from './TerrainMaterial.js';
 import TerrainMesh from './TerrainMesh.js';
-import { AssetHost } from '../asset.js';
+import { AssetHost } from '../../asset.js';
+import { MapAreaSpec, TerrainSpec } from '../loader/types.js';
+
+const SPLAT_TEXTURE_PLACEHOLDER = new THREE.Texture();
 
 type TerrainManagerOptions = {
   host: AssetHost;
@@ -21,7 +21,7 @@ class TerrainManager {
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
   }
 
-  getArea(areaId: number, area: MapArea): Promise<THREE.Group> {
+  getArea(areaId: number, area: MapAreaSpec): Promise<THREE.Group> {
     const loaded = this.#loadedAreas.get(areaId);
     if (loaded) {
       return Promise.resolve(loaded);
@@ -51,14 +51,13 @@ class TerrainManager {
     this.#loadedAreas.delete(areaId);
   }
 
-  async #loadArea(areaId: number, area: MapArea) {
+  async #loadArea(areaId: number, area: MapAreaSpec) {
     const group = new THREE.Group();
     group.name = 'terrain';
     group.matrixAutoUpdate = false;
     group.matrixWorldAutoUpdate = false;
 
-    const renderableChunks = area.chunks.filter((chunk) => chunk.layers.length > 0);
-    const meshes = await Promise.all(renderableChunks.map((chunk) => this.#createMesh(chunk)));
+    const meshes = await Promise.all(area.terrain.map((terrain) => this.#createMesh(terrain)));
 
     for (const mesh of meshes) {
       group.add(mesh);
@@ -70,20 +69,16 @@ class TerrainManager {
     return group;
   }
 
-  async #createMesh(chunk: MapChunk) {
-    const [geometry, material] = await Promise.all([
-      this.#createGeometry(chunk),
-      this.#createMaterial(chunk),
-    ]);
+  async #createMesh(spec: TerrainSpec) {
+    const geometry = this.#createGeometry(spec);
+    const material = await this.#createMaterial(spec);
 
-    return new TerrainMesh(chunk.position, geometry, material);
+    return new TerrainMesh(spec.position, geometry, material);
   }
 
-  async #createGeometry(chunk: MapChunk) {
-    const [vertexBuffer, indexBuffer] = await Promise.all([
-      createTerrainVertexBuffer(chunk),
-      createTerrainIndexBuffer(chunk),
-    ]);
+  #createGeometry(spec: TerrainSpec) {
+    const vertexBuffer = spec.geometry.vertexBuffer;
+    const indexBuffer = spec.geometry.indexBuffer;
 
     const geometry = new THREE.BufferGeometry();
 
@@ -99,13 +94,44 @@ class TerrainManager {
     return geometry;
   }
 
-  async #createMaterial(chunk: MapChunk) {
-    const [splatTexture, ...layerTextures] = await Promise.all([
-      createSplatTexture(chunk.layers),
-      ...chunk.layers.map((layer) => this.#textureManager.get(layer.texture)),
-    ]);
+  async #createMaterial(spec: TerrainSpec) {
+    const splatTexture = this.#createSplatTexture(spec);
+    const layerTextures = await Promise.all(
+      spec.material.layers.map((layer) => this.#textureManager.get(layer.texturePath)),
+    );
 
-    return new TerrainMaterial(chunk.layers.length, layerTextures, splatTexture);
+    return new TerrainMaterial(spec.material.layers.length, layerTextures, splatTexture);
+  }
+
+  #createSplatTexture(spec: TerrainSpec) {
+    const splat = spec.material.splat;
+
+    // No splat (0 or 1 layer)
+
+    if (!splat) {
+      // Return placeholder texture to keep uniforms consistent
+      return SPLAT_TEXTURE_PLACEHOLDER;
+    }
+
+    // Single splat (2 layers)
+
+    if (splat.channels === 1) {
+      const texture = new THREE.DataTexture(splat.data, splat.width, splat.height, THREE.RedFormat);
+      texture.minFilter = texture.magFilter = THREE.LinearFilter;
+      texture.anisotropy = 16;
+      texture.needsUpdate = true;
+
+      return texture;
+    }
+
+    // Multiple splats (3+ layers)
+
+    const texture = new THREE.DataTexture(splat.data, splat.width, splat.height, THREE.RGBAFormat);
+    texture.minFilter = texture.magFilter = THREE.LinearFilter;
+    texture.anisotropy = 16;
+    texture.needsUpdate = true;
+
+    return texture;
   }
 }
 
