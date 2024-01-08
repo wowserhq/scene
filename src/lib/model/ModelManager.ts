@@ -9,6 +9,7 @@ import { getFragmentShader } from './shader/fragment.js';
 import { M2_MATERIAL_PASS } from './const.js';
 import ModelLoader from './loader/ModelLoader.js';
 import { MaterialSpec, ModelSpec, TextureSpec } from './loader/types.js';
+import DayNight from '../daynight/DayNight.js';
 
 type ModelResources = {
   name: string;
@@ -19,11 +20,13 @@ type ModelResources = {
 type ModelManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
+  dayNight?: DayNight;
 };
 
 class ModelManager {
   #host: AssetHost;
   #textureManager: TextureManager;
+  #dayNight: DayNight;
 
   #loader: ModelLoader;
   #loaded = new globalThis.Map<string, ModelResources>();
@@ -34,6 +37,8 @@ class ModelManager {
 
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
     this.#loader = new ModelLoader({ host: options.host });
+
+    this.#dayNight = options.dayNight ?? new DayNight();
   }
 
   async get(path: string) {
@@ -134,11 +139,13 @@ class ModelManager {
     const textures = await Promise.all(
       spec.textures.map((textureSpec) => this.#createTexture(textureSpec)),
     );
+    const uniforms = { ...this.#dayNight.uniforms };
 
     return new ModelMaterial(
       vertexShader,
       fragmentShader,
       textures,
+      uniforms,
       spec.blend,
       M2_MATERIAL_PASS.PASS_0,
       spec.flags,

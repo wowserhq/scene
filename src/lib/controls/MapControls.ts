@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import BaseOrbitControls from './BaseOrbitControls.js';
 
-const TARGET_OFFSET = 100.0;
+const TARGET_OFFSET = 30.0;
 
 class MapControls extends BaseOrbitControls {
   #raycaster = new THREE.Raycaster();

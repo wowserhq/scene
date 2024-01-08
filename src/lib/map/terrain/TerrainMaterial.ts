@@ -3,10 +3,16 @@ import vertexShader from './shader/vertex.js';
 import fragmentShader from './shader/fragment.js';
 
 class TerrainMaterial extends THREE.RawShaderMaterial {
-  constructor(layerCount: number, layerTextures: THREE.Texture[], splatTexture: THREE.Texture) {
+  constructor(
+    layerCount: number,
+    layerTextures: THREE.Texture[],
+    splatTexture: THREE.Texture,
+    uniforms: Record<string, THREE.IUniform>,
+  ) {
     super();
 
     this.uniforms = {
+      ...uniforms,
       layerCount: { value: layerCount },
       layers: { value: layerTextures },
       splat: { value: splatTexture },

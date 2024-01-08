@@ -13,9 +13,9 @@ const VERTEX_SHADER_UNIFORMS = [
   { name: 'modelMatrix', type: 'mat4' },
   { name: 'modelViewMatrix', type: 'mat4' },
   { name: 'normalMatrix', type: 'mat3' },
-  { name: 'viewMatrix', type: 'mat4' },
   { name: 'projectionMatrix', type: 'mat4' },
   { name: 'cameraPosition', type: 'vec3' },
+  { name: 'sunDir', type: 'vec3' },
 ];
 
 const VERTEX_SHADER_INPUTS = [
@@ -28,11 +28,8 @@ const VERTEX_SHADER_OUTPUTS = [{ name: 'vLight', type: 'float' }];
 const VERTEX_SHADER_FUNCTIONS = [];
 
 const VERTEX_SHADER_MAIN_LIGHTING = `
-// TODO - Replace with lighting manager controlled value
-vec3 lightDirection = vec3(-1, -1, -1);
-vec3 viewLightDirection = (viewMatrix * vec4(lightDirection, 0.0)).xyz;
 vec3 viewNormal = normalize(normalMatrix * normal);
-vLight = clamp(dot(-viewLightDirection, viewNormal), 0.0, 1.0);
+vLight = clamp(dot(viewNormal, -sunDir), 0.0, 1.0);
 `;
 
 const VERTEX_SHADER_MAIN_FOG = `
