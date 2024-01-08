@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/wowserhq/scene/compare/v0.16.1...v0.17.0) (2024-01-08)
+
+
+### Features
+
+* **daynight:** add initial DayNight implementation ([b79a439](https://github.com/wowserhq/scene/commit/b79a4398be8d975bb0b7432591a9461082ed42ce))
+
 ## [0.16.1](https://github.com/wowserhq/scene/compare/v0.16.0...v0.16.1) (2024-01-08)
 
 
