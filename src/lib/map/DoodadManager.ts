@@ -3,10 +3,12 @@ import ModelManager from '../model/ModelManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
 import { MapAreaSpec } from './loader/types.js';
+import DayNight from '../daynight/DayNight.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
+  dayNight: DayNight;
 };
 
 class DoodadManager {
@@ -19,6 +21,7 @@ class DoodadManager {
     this.#modelManager = new ModelManager({
       host: options.host,
       textureManager: options.textureManager,
+      dayNight: options.dayNight,
     });
   }
 

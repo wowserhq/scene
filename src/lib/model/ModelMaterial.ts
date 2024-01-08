@@ -22,6 +22,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     vertexShader: string,
     fragmentShader: string,
     textures: THREE.Texture[],
+    uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
     pass = DEFAULT_PASS,
     flags = DEFAULT_FLAGS,
@@ -50,6 +51,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.blendDstAlpha = blendDstAlpha;
 
     this.uniforms = {
+      ...uniforms,
       textures: { value: textures },
       alphaRef: { value: this.#alphaRef },
       fogColor: { value: new THREE.Color(0.25, 0.5, 0.8) },
