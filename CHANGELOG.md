@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/wowserhq/scene/compare/v0.16.0...v0.16.1) (2024-01-08)
+
+
+### Bug Fixes
+
+* **map:** prevent transferable errors when loading map areas ([67e7708](https://github.com/wowserhq/scene/commit/67e770886680b58c7b0af1eede8b15b75444470d))
+
 ## [0.16.0](https://github.com/wowserhq/scene/compare/v0.15.0...v0.16.0) (2024-01-08)
 
 
