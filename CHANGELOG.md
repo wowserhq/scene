@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/wowserhq/scene/compare/v0.15.0...v0.16.0) (2024-01-08)
+
+
+### Features
+
+* adjust fog logic to match game ([6ca4dcb](https://github.com/wowserhq/scene/commit/6ca4dcb26dcfa26ec733aed45393e677c58c3485))
+
+
+### Bug Fixes
+
+* transform normals for lighting ([4c4d351](https://github.com/wowserhq/scene/commit/4c4d3517234deee1d7b67000ab16f9ff32e7e943))
+
 ## [0.15.0](https://github.com/wowserhq/scene/compare/v0.14.0...v0.15.0) (2024-01-07)
 
 
