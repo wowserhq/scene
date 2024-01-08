@@ -44,7 +44,7 @@ class MapLoaderWorker extends SceneWorker {
     const areaData = await loadAsset(this.#host, areaPath);
     const area = new MapArea(map.layerSplatDepth).load(areaData);
 
-    const transfer = [];
+    const buffers = new Set<ArrayBuffer>();
 
     const terrainSpecs: TerrainSpec[] = [];
     for (const chunk of area.chunks) {
@@ -60,11 +60,11 @@ class MapLoaderWorker extends SceneWorker {
 
       terrainSpecs.push(terrainSpec);
 
-      transfer.push(terrainSpec.geometry.vertexBuffer);
-      transfer.push(terrainSpec.geometry.indexBuffer);
+      buffers.add(terrainSpec.geometry.vertexBuffer);
+      buffers.add(terrainSpec.geometry.indexBuffer);
 
       if (terrainSpec.material.splat) {
-        transfer.push(terrainSpec.material.splat.data.buffer);
+        buffers.add(terrainSpec.material.splat.data.buffer);
       }
     }
 
@@ -78,6 +78,8 @@ class MapLoaderWorker extends SceneWorker {
         scale: def.scale,
       })),
     };
+
+    const transfer = [...buffers];
 
     return [spec, transfer];
   }
