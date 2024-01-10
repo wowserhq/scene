@@ -4,26 +4,26 @@ import TerrainMaterial from './TerrainMaterial.js';
 import TerrainMesh from './TerrainMesh.js';
 import { AssetHost } from '../../asset.js';
 import { MapAreaSpec, TerrainSpec } from '../loader/types.js';
-import DayNight from '../../daynight/DayNight.js';
+import MapLight from '../MapLight.js';
 
 const SPLAT_TEXTURE_PLACEHOLDER = new THREE.Texture();
 
 type TerrainManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
-  dayNight: DayNight;
+  mapLight: MapLight;
 };
 
 class TerrainManager {
   #textureManager: TextureManager;
-  #dayNight: DayNight;
+  #mapLight: MapLight;
 
   #loadedAreas = new globalThis.Map<number, THREE.Group>();
   #loadingAreas = new globalThis.Map<number, Promise<THREE.Group>>();
 
   constructor(options: TerrainManagerOptions) {
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
-    this.#dayNight = options.dayNight;
+    this.#mapLight = options.mapLight;
   }
 
   getArea(areaId: number, area: MapAreaSpec): Promise<THREE.Group> {
@@ -104,7 +104,7 @@ class TerrainManager {
     const layerTextures = await Promise.all(
       spec.material.layers.map((layer) => this.#textureManager.get(layer.texturePath)),
     );
-    const uniforms = { ...this.#dayNight.uniforms };
+    const uniforms = { ...this.#mapLight.uniforms };
 
     return new TerrainMaterial(spec.material.layers.length, layerTextures, splatTexture, uniforms);
   }

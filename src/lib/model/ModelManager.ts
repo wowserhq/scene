@@ -9,7 +9,7 @@ import { getFragmentShader } from './shader/fragment.js';
 import { M2_MATERIAL_PASS } from './const.js';
 import ModelLoader from './loader/ModelLoader.js';
 import { MaterialSpec, ModelSpec, TextureSpec } from './loader/types.js';
-import DayNight from '../daynight/DayNight.js';
+import SceneLight from '../light/SceneLight.js';
 
 type ModelResources = {
   name: string;
@@ -20,13 +20,13 @@ type ModelResources = {
 type ModelManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
-  dayNight?: DayNight;
+  sceneLight?: SceneLight;
 };
 
 class ModelManager {
   #host: AssetHost;
   #textureManager: TextureManager;
-  #dayNight: DayNight;
+  #sceneLight: SceneLight;
 
   #loader: ModelLoader;
   #loaded = new globalThis.Map<string, ModelResources>();
@@ -38,7 +38,7 @@ class ModelManager {
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
     this.#loader = new ModelLoader({ host: options.host });
 
-    this.#dayNight = options.dayNight ?? new DayNight();
+    this.#sceneLight = options.sceneLight ?? new SceneLight();
   }
 
   async get(path: string) {
@@ -139,7 +139,7 @@ class ModelManager {
     const textures = await Promise.all(
       spec.textures.map((textureSpec) => this.#createTexture(textureSpec)),
     );
-    const uniforms = { ...this.#dayNight.uniforms };
+    const uniforms = { ...this.#sceneLight.uniforms };
 
     return new ModelMaterial(
       vertexShader,

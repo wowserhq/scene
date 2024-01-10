@@ -6,7 +6,7 @@ import DoodadManager from './DoodadManager.js';
 import { AssetHost } from '../asset.js';
 import MapLoader from './loader/MapLoader.js';
 import { MapAreaSpec, MapSpec } from './loader/types.js';
-import DayNight from '../daynight/DayNight.js';
+import MapLight from './MapLight.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
 
@@ -33,7 +33,7 @@ class MapManager {
   #terrainManager: TerrainManager;
   #doodadManager: DoodadManager;
 
-  #dayNight = new DayNight();
+  #mapLight: MapLight;
 
   #target = new THREE.Vector2();
   #targetAreaX: number;
@@ -55,15 +55,17 @@ class MapManager {
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
     this.#loader = new MapLoader({ host: options.host });
 
+    this.#mapLight = new MapLight();
+
     this.#terrainManager = new TerrainManager({
       host: options.host,
       textureManager: this.#textureManager,
-      dayNight: this.#dayNight,
+      mapLight: this.#mapLight,
     });
     this.#doodadManager = new DoodadManager({
       host: options.host,
       textureManager: this.#textureManager,
-      dayNight: this.#dayNight,
+      mapLight: this.#mapLight,
     });
 
     this.#root = new THREE.Group();
@@ -111,7 +113,7 @@ class MapManager {
   }
 
   update(deltaTime: number, camera: THREE.Camera) {
-    this.#dayNight.update(camera);
+    this.#mapLight.update(camera);
 
     this.#projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.#cameraFrustum.setFromProjectionMatrix(this.#projScreenMatrix);

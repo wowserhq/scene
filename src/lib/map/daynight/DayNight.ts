@@ -13,13 +13,12 @@ class DayNight {
   #timeProgression = 0.0;
 
   #sunDir = new THREE.Vector3();
-  #sunDirView = new THREE.Vector3();
-
-  #uniforms = {
-    sunDir: { value: this.#sunDirView },
-  };
 
   constructor() {}
+
+  get sunDir() {
+    return this.#sunDir;
+  }
 
   get time() {
     return this.#time;
@@ -33,10 +32,6 @@ class DayNight {
     return this.#timeProgression;
   }
 
-  get uniforms() {
-    return this.#uniforms;
-  }
-
   setTimeOverride(override: number) {
     this.#timeOverride = override;
     this.#updateTime();
@@ -47,12 +42,9 @@ class DayNight {
     this.#updateTime();
   }
 
-  update(camera: THREE.Camera) {
+  update() {
     this.#updateTime();
     this.#updateSunDirection();
-
-    const viewMatrix = camera.matrixWorldInverse;
-    this.#sunDirView.copy(this.#sunDir).transformDirection(viewMatrix).normalize();
   }
 
   #updateTime() {
