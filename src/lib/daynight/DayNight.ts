@@ -1,9 +1,16 @@
 import * as THREE from 'three';
 import { SUN_PHI_TABLE, SUN_THETA_TABLE } from './table.js';
-import { interpolateDayNightTable } from './util.js';
+import { getDayNightTime, interpolateDayNightTable } from './util.js';
 
 class DayNight {
-  #dayProgression = 0.0;
+  // Time in half-minutes since midnight (0 - 2879)
+  #time = 0;
+
+  // Overridden time in half-minutes since midnight (0 - 2879)
+  #timeOverride = null;
+
+  // Time as a floating point range from 0.0 to 1.0
+  #timeProgression = 0.0;
 
   #sunDir = new THREE.Vector3();
   #sunDirView = new THREE.Vector3();
@@ -14,29 +21,54 @@ class DayNight {
 
   constructor() {}
 
-  get dayProgression() {
-    return this.#dayProgression;
+  get time() {
+    return this.#time;
   }
 
-  set dayProgression(dayProgression: number) {
-    this.#dayProgression = dayProgression;
+  get timeOverride() {
+    return this.#timeOverride;
+  }
+
+  get timeProgression() {
+    return this.#timeProgression;
   }
 
   get uniforms() {
     return this.#uniforms;
   }
 
+  setTimeOverride(override: number) {
+    this.#timeOverride = override;
+    this.#updateTime();
+  }
+
+  clearTimeOverride() {
+    this.#timeOverride = null;
+    this.#updateTime();
+  }
+
   update(camera: THREE.Camera) {
+    this.#updateTime();
     this.#updateSunDirection();
 
     const viewMatrix = camera.matrixWorldInverse;
     this.#sunDirView.copy(this.#sunDir).transformDirection(viewMatrix).normalize();
   }
 
+  #updateTime() {
+    if (this.#timeOverride) {
+      this.#time = this.#timeOverride;
+    } else {
+      this.#time = getDayNightTime();
+    }
+
+    this.#timeProgression = this.#time / 2880;
+  }
+
   #updateSunDirection() {
     // Get spherical coordinates
-    const phi = interpolateDayNightTable(SUN_PHI_TABLE, this.#dayProgression);
-    const theta = interpolateDayNightTable(SUN_THETA_TABLE, this.#dayProgression);
+    const phi = interpolateDayNightTable(SUN_PHI_TABLE, this.#timeProgression);
+    const theta = interpolateDayNightTable(SUN_THETA_TABLE, this.#timeProgression);
 
     // Convert from spherical coordinates to XYZ
     // x = rho * sin(phi) * cos(theta)

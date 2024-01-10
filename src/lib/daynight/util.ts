@@ -1,4 +1,15 @@
 /**
+ * Returns number of half minutes since midnight.
+ */
+const getDayNightTime = () => {
+  const d = new Date();
+
+  const msSinceMidnight = d.getTime() - d.setHours(0, 0, 0, 0);
+
+  return Math.round(msSinceMidnight / 1000.0 / 30.0);
+};
+
+/**
  * Given two values, linearly interpolate between them according to the given factor.
  *
  * @param value1
@@ -64,4 +75,4 @@ const interpolateDayNightTable = (table: number[], key: number) => {
   return lerpNumbers(previousValue, nextValue, factor);
 };
 
-export { interpolateDayNightTable };
+export { getDayNightTime, interpolateDayNightTable };
