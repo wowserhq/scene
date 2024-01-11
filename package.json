@@ -35,7 +35,7 @@
     "three.js"
   ],
   "dependencies": {
-    "@wowserhq/format": "^0.12.0"
+    "@wowserhq/format": "^0.13.1"
   },
   "peerDependencies": {
     "three": "^0.160.0"

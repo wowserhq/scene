@@ -3,7 +3,7 @@ import ModelManager from '../model/ModelManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
 import { MapAreaSpec } from './loader/types.js';
-import MapLight from './MapLight.js';
+import MapLight from './light/MapLight.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;

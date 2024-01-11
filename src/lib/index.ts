@@ -1,5 +1,6 @@
 export * from './controls/MapControls.js';
 export * from './controls/OrbitControls.js';
+export * from './db/DbManager.js';
 export * from './light/SceneLight.js';
 export * from './map/MapManager.js';
 export * from './model/ModelManager.js';
