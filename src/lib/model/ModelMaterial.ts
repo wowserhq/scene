@@ -54,8 +54,6 @@ class ModelMaterial extends THREE.RawShaderMaterial {
       ...uniforms,
       textures: { value: textures },
       alphaRef: { value: this.#alphaRef },
-      fogColor: { value: new THREE.Color(0.25, 0.5, 0.8) },
-      fogParams: { value: new THREE.Vector4(0.0, 1066.0, 1.0, 1.0) },
     };
   }
 

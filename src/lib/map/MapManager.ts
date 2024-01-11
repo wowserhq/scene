@@ -6,13 +6,15 @@ import DoodadManager from './DoodadManager.js';
 import { AssetHost } from '../asset.js';
 import MapLoader from './loader/MapLoader.js';
 import { MapAreaSpec, MapSpec } from './loader/types.js';
-import MapLight from './MapLight.js';
+import MapLight from './light/MapLight.js';
+import DbManager from '../db/DbManager.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
 
 type MapManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
+  dbManager?: DbManager;
   viewDistance?: number;
 };
 
@@ -32,6 +34,7 @@ class MapManager {
   #textureManager: TextureManager;
   #terrainManager: TerrainManager;
   #doodadManager: DoodadManager;
+  #dbManager: DbManager;
 
   #mapLight: MapLight;
 
@@ -53,9 +56,10 @@ class MapManager {
     }
 
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
+    this.#dbManager = options.dbManager ?? new DbManager({ host: options.host });
     this.#loader = new MapLoader({ host: options.host });
 
-    this.#mapLight = new MapLight();
+    this.#mapLight = new MapLight({ dbManager: this.#dbManager });
 
     this.#terrainManager = new TerrainManager({
       host: options.host,
@@ -73,6 +77,10 @@ class MapManager {
     this.#root.matrixWorldAutoUpdate = false;
   }
 
+  get clearColor() {
+    return this.#mapLight.fogColor;
+  }
+
   get mapMame() {
     return this.#mapName;
   }
@@ -81,9 +89,11 @@ class MapManager {
     return this.#root;
   }
 
-  load(mapName: string) {
+  load(mapName: string, mapId?: number) {
     this.#mapName = mapName;
     this.#mapDir = `world/maps/${mapName}`;
+
+    this.#mapLight.mapId = mapId;
 
     this.#root.name = `map:${mapName}`;
 

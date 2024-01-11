@@ -4,7 +4,7 @@ import TerrainMaterial from './TerrainMaterial.js';
 import TerrainMesh from './TerrainMesh.js';
 import { AssetHost } from '../../asset.js';
 import { MapAreaSpec, TerrainSpec } from '../loader/types.js';
-import MapLight from '../MapLight.js';
+import MapLight from '../light/MapLight.js';
 
 const SPLAT_TEXTURE_PLACEHOLDER = new THREE.Texture();
 

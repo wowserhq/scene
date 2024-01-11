@@ -7,6 +7,8 @@ const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'layerCount', type: 'int' },
   { name: 'layers[4]', type: 'sampler2D' },
   { name: 'splat', type: 'sampler2D' },
+  { name: 'sunDiffuseColor', type: 'vec3' },
+  { name: 'sunAmbientColor', type: 'vec3' },
 ];
 
 const FRAGMENT_SHADER_INPUTS = [
@@ -55,10 +57,7 @@ color.a = 1.0;
 `;
 
 const FRAGMENT_SHADER_MAIN_LIGHTING = `
-// Fixed lighting
-vec3 lightDiffuse = normalize(vec3(0.25, 0.5, 1.0));
-vec3 lightAmbient = normalize(vec3(0.5, 0.5, 0.5));
-color.rgb *= lightDiffuse * vLight + lightAmbient;
+color.rgb *= sunDiffuseColor * vLight + sunAmbientColor;
 `;
 
 const FRAGMENT_SHADER_MAIN_FOG = `

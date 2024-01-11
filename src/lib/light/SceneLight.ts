@@ -1,26 +1,60 @@
 import * as THREE from 'three';
+import SceneLightParams from './SceneLightParams.js';
 
 class SceneLight {
-  #sunDir = new THREE.Vector3();
-  #sunDirView = new THREE.Vector3();
+  #location: 'exterior' | 'interior' = 'exterior';
 
-  #uniforms = {
-    sunDir: {
-      value: this.#sunDirView,
-    },
+  #params = {
+    exterior: new SceneLightParams(),
+    interior: new SceneLightParams(),
   };
 
-  get uniforms() {
-    return this.#uniforms;
+  #uniforms = {
+    exterior: this.#params.exterior.uniforms,
+    interior: this.#params.interior.uniforms,
+  };
+
+  get location() {
+    return this.#location;
   }
 
-  setSunDir(dir: THREE.Vector3) {
-    this.#sunDir.copy(dir);
+  set location(location: 'exterior' | 'interior') {
+    this.#location = location;
+  }
+
+  get uniforms() {
+    return this.#uniforms[this.#location];
+  }
+
+  get sunDir() {
+    return this.#params[this.#location].sunDir;
+  }
+
+  get sunDirView() {
+    return this.#params[this.#location].sunDirView;
+  }
+
+  get sunDiffuseColor() {
+    return this.#params[this.#location].sunDiffuseColor;
+  }
+
+  get sunAmbientColor() {
+    return this.#params[this.#location].sunAmbientColor;
+  }
+
+  get fogParams() {
+    return this.#params[this.#location].fogParams;
+  }
+
+  get fogColor() {
+    return this.#params[this.#location].fogColor;
   }
 
   update(camera: THREE.Camera) {
     const viewMatrix = camera.matrixWorldInverse;
-    this.#sunDirView.copy(this.#sunDir).transformDirection(viewMatrix).normalize();
+
+    this.#params.exterior.transformSunDirView(viewMatrix);
+    this.#params.interior.transformSunDirView(viewMatrix);
   }
 }
 

@@ -7,6 +7,8 @@ const FRAGMENT_SHADER_PRECISION = 'highp float';
 const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'textures[2]', type: 'sampler2D' },
   { name: 'alphaRef', type: 'float' },
+  { name: 'sunDiffuseColor', type: 'vec3' },
+  { name: 'sunAmbientColor', type: 'vec3' },
 ];
 
 const FRAGMENT_SHADER_INPUTS = [{ name: 'vLight', type: 'float' }];
@@ -79,10 +81,7 @@ if (color.a < alphaRef) {
 `;
 
 const FRAGMENT_SHADER_MAIN_LIGHTING = `
-// Fixed lighting
-vec3 lightDiffuse = normalize(vec3(0.25, 0.5, 1.0));
-vec3 lightAmbient = normalize(vec3(0.5, 0.5, 0.5));
-color.rgb *= lightDiffuse * vLight + lightAmbient;
+color.rgb *= sunDiffuseColor * vLight + sunAmbientColor;
 `;
 
 const FRAGMENT_SHADER_MAIN_FOG = `
