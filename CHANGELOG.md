@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.17.0](https://github.com/wowserhq/scene/compare/v0.16.1...v0.17.0) (2024-01-11)
+
+
+### Features
+
+* **daynight:** add initial DayNight implementation ([479724c](https://github.com/wowserhq/scene/commit/479724c1c402f86169e89ae81d5890818d059552))
+* **daynight:** use clock to set daynight progression ([a0c157d](https://github.com/wowserhq/scene/commit/a0c157dc3e27fb83ddb3a0b97677ac8e3d8e7dfe))
+* **map:** make daynight private to map classes ([528027f](https://github.com/wowserhq/scene/commit/528027f44a343aacbfb5de6ec86bcdf0b2d310bf))
+* **map:** use area lights ([#43](https://github.com/wowserhq/scene/issues/43)) ([b7b0f38](https://github.com/wowserhq/scene/commit/b7b0f382c511c8a51036bd47a62f9320b9b0f8e0))
+
 ## [0.16.1](https://github.com/wowserhq/scene/compare/v0.16.0...v0.16.1) (2024-01-08)
 
 
