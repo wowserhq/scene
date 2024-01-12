@@ -10,6 +10,7 @@ import MapLight from './light/MapLight.js';
 import DbManager from '../db/DbManager.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
+const EFFECTIVE_VIEW_DISTANCE_EXTENSION = 100.0;
 
 type MapManagerOptions = {
   host: AssetHost;
@@ -45,6 +46,7 @@ class MapManager {
   #targetChunkY: number;
 
   #viewDistance = DEFAULT_VIEW_DISTANCE;
+  #effectiveViewDistance = this.#viewDistance;
   #projScreenMatrix = new THREE.Matrix4();
   #cameraFrustum = new THREE.Frustum();
 
@@ -124,6 +126,13 @@ class MapManager {
 
   update(deltaTime: number, camera: THREE.Camera) {
     this.#mapLight.update(camera);
+
+    // If fog end is closer than the configured view distance, use the fog end plus extension as
+    // the effective view distance
+    this.#effectiveViewDistance = Math.min(
+      this.#mapLight.fogEnd + EFFECTIVE_VIEW_DISTANCE_EXTENSION,
+      this.#viewDistance,
+    );
 
     this.#projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.#cameraFrustum.setFromProjectionMatrix(this.#projScreenMatrix);
@@ -228,7 +237,7 @@ class MapManager {
   }
 
   #getChunkRadius() {
-    return this.#viewDistance / MAP_CHUNK_HEIGHT;
+    return this.#effectiveViewDistance / MAP_CHUNK_HEIGHT;
   }
 
   #getAreaId(areaX: number, areaY: number) {

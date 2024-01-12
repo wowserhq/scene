@@ -46,6 +46,14 @@ class SceneLight {
     return this.#params[this.#location].fogParams;
   }
 
+  get fogStart() {
+    return this.#params[this.#location].fogParams.x;
+  }
+
+  get fogEnd() {
+    return this.#params[this.#location].fogParams.y;
+  }
+
   get fogColor() {
     return this.#params[this.#location].fogColor;
   }
