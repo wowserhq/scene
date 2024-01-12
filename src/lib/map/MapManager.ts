@@ -191,7 +191,7 @@ class MapManager {
 
     for (const areaId of this.#desiredAreas.values()) {
       // Already loaded or loading
-      if (this.#loadingAreas.get(areaId) || this.#loadedAreas.get(areaId)) {
+      if (this.#loadingAreas.has(areaId) || this.#loadedAreas.has(areaId)) {
         continue;
       }
 
