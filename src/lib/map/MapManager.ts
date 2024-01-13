@@ -10,7 +10,7 @@ import MapLight from './light/MapLight.js';
 import DbManager from '../db/DbManager.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
-const EFFECTIVE_VIEW_DISTANCE_EXTENSION = 100.0;
+const DETAIL_DISTANCE_EXTENSION = MAP_CHUNK_HEIGHT;
 
 type MapManagerOptions = {
   host: AssetHost;
@@ -46,15 +46,17 @@ class MapManager {
   #targetChunkY: number;
 
   #viewDistance = DEFAULT_VIEW_DISTANCE;
-  #effectiveViewDistance = this.#viewDistance;
-  #projScreenMatrix = new THREE.Matrix4();
-  #cameraFrustum = new THREE.Frustum();
+  #detailDistance = this.#viewDistance;
+  #cullingCamera = new THREE.PerspectiveCamera();
+  #cullingProjection = new THREE.Matrix4();
+  #cullingFrustum = new THREE.Frustum();
 
   #desiredAreas = new Set<number>();
 
   constructor(options: MapManagerOptions) {
     if (options.viewDistance) {
       this.#viewDistance = options.viewDistance;
+      this.#detailDistance = this.#viewDistance;
     }
 
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
@@ -127,15 +129,22 @@ class MapManager {
   update(deltaTime: number, camera: THREE.Camera) {
     this.#mapLight.update(camera);
 
-    // If fog end is closer than the configured view distance, use the fog end plus extension as
-    // the effective view distance
-    this.#effectiveViewDistance = Math.min(
-      this.#mapLight.fogEnd + EFFECTIVE_VIEW_DISTANCE_EXTENSION,
+    // If fog end is closer than the configured view distance, use the fog end plus extension to
+    // cull non-visible map elements
+    this.#detailDistance = Math.min(
+      this.#mapLight.fogEnd + DETAIL_DISTANCE_EXTENSION,
       this.#viewDistance,
     );
 
-    this.#projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-    this.#cameraFrustum.setFromProjectionMatrix(this.#projScreenMatrix);
+    // Establish culling frustum based on detail distance
+    this.#cullingCamera.copy(camera as THREE.PerspectiveCamera);
+    this.#cullingCamera.far = this.#detailDistance;
+    this.#cullingCamera.updateProjectionMatrix();
+    this.#cullingProjection.multiplyMatrices(
+      this.#cullingCamera.projectionMatrix,
+      this.#cullingCamera.matrixWorldInverse,
+    );
+    this.#cullingFrustum.setFromProjectionMatrix(this.#cullingProjection);
 
     this.#cullGroups();
   }
@@ -143,14 +152,14 @@ class MapManager {
   #cullGroups() {
     // Terrain groups
     for (const terrainGroup of this.#terrainGroups.values()) {
-      terrainGroup.visible = this.#cameraFrustum.intersectsSphere(
+      terrainGroup.visible = this.#cullingFrustum.intersectsSphere(
         terrainGroup.userData.boundingSphere,
       );
     }
 
     // Doodad groups
     for (const doodadGroup of this.#doodadGroups.values()) {
-      doodadGroup.visible = this.#cameraFrustum.intersectsSphere(
+      doodadGroup.visible = this.#cullingFrustum.intersectsSphere(
         doodadGroup.userData.boundingSphere,
       );
     }
@@ -237,7 +246,7 @@ class MapManager {
   }
 
   #getChunkRadius() {
-    return this.#effectiveViewDistance / MAP_CHUNK_HEIGHT;
+    return this.#viewDistance / MAP_CHUNK_HEIGHT;
   }
 
   #getAreaId(areaX: number, areaY: number) {
