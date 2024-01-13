@@ -1,6 +1,6 @@
 {
   "name": "@wowserhq/scene",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Three.js rendering classes for World of Warcraft model formats",
   "author": "Wowser Contributors",
   "repository": "github:wowserhq/scene",
