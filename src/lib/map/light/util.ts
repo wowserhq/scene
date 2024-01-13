@@ -153,7 +153,9 @@ const selectLightsForPosition = (
   }
 
   // Sort selected lights by distance (closer -> farther)
-  selectedLights.sort((selectedLight) => -selectedLight.distance);
+  selectedLights.sort(
+    (light1: WeightedAreaLight, light2: WeightedAreaLight) => light1.distance - light2.distance,
+  );
 
   // Distribute weights by falloff
   let availableWeight = 1.0;
