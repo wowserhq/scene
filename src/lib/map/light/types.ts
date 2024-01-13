@@ -15,4 +15,10 @@ type AreaLight = {
   params: AreaLightParams[];
 };
 
-export { AreaLight, AreaLightParams };
+type WeightedAreaLight = {
+  light: AreaLight;
+  weight: number;
+  distance: number;
+};
+
+export { AreaLight, AreaLightParams, WeightedAreaLight };

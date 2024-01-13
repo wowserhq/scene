@@ -1,4 +1,10 @@
 import * as THREE from 'three';
+import { AreaLight, WeightedAreaLight } from './types.js';
+import { MAP_CORNER_X, MAP_CORNER_Y } from '@wowserhq/format';
+
+const clamp = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
+};
 
 /**
  * Returns number of half minutes since midnight.
@@ -122,4 +128,55 @@ const interpolateNumericTable = (table: any[], key: number): number => {
   return lerpNumbers(previousValue, nextValue, factor);
 };
 
-export { getDayNightTime, interpolateColorTable, interpolateNumericTable };
+const selectLightsForPosition = (
+  lights: AreaLight[],
+  position: THREE.Vector3,
+): WeightedAreaLight[] => {
+  const selectedLights = [];
+
+  for (const light of lights) {
+    const distance = position.distanceTo(light.position);
+
+    // Include lights if position is within falloff radii
+    if (distance <= light.falloffEnd) {
+      selectedLights.push({ light, distance, weight: 0.0 });
+    }
+
+    // Include default light
+    if (
+      light.position.x === MAP_CORNER_X &&
+      light.position.y === MAP_CORNER_Y &&
+      light.falloffEnd === 0.0
+    ) {
+      selectedLights.push({ light, distance, weight: 0.0 });
+    }
+  }
+
+  // Sort selected lights by distance (closer -> farther)
+  selectedLights.sort((selectedLight) => -selectedLight.distance);
+
+  // Distribute weights by falloff
+  let availableWeight = 1.0;
+  for (const selectedLight of selectedLights) {
+    if (availableWeight === 0.0) {
+      break;
+    }
+
+    const { light, distance } = selectedLight;
+
+    // Default light has no falloff
+    const falloff =
+      light.falloffStart > 0.0 && light.falloffEnd > 0.0
+        ? (distance - light.falloffStart) / (light.falloffEnd - light.falloffStart)
+        : 0.0;
+
+    const weight = clamp(1.0 - falloff, 0.0, availableWeight);
+
+    selectedLight.weight = weight;
+    availableWeight -= weight;
+  }
+
+  return selectedLights;
+};
+
+export { getDayNightTime, interpolateColorTable, interpolateNumericTable, selectLightsForPosition };

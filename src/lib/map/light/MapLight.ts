@@ -4,16 +4,20 @@ import {
   LightIntBandRecord,
   LightParamsRecord,
   LightRecord,
-  MAP_CORNER_X,
-  MAP_CORNER_Y,
 } from '@wowserhq/format';
-import { getDayNightTime, interpolateColorTable, interpolateNumericTable } from './util.js';
+import {
+  getDayNightTime,
+  interpolateColorTable,
+  interpolateNumericTable,
+  selectLightsForPosition,
+} from './util.js';
 import { SUN_PHI_TABLE, SUN_THETA_TABLE } from './table.js';
 import { LIGHT_FLOAT_BAND, LIGHT_INT_BAND, LIGHT_PARAM } from './const.js';
 import { getAreaLightsFromDb } from './db.js';
-import { AreaLight } from './types.js';
+import { AreaLight, WeightedAreaLight } from './types.js';
 import SceneLight from '../../light/SceneLight.js';
 import DbManager from '../../db/DbManager.js';
+import { blendLights } from './blend.js';
 
 type MapLightOptions = {
   dbManager: DbManager;
@@ -26,7 +30,7 @@ class MapLight extends SceneLight {
   #lights: Record<number, AreaLight[]>;
 
   // Applicable area lights given current camera position
-  #selectedLights: AreaLight[];
+  #selectedLights: WeightedAreaLight[];
 
   // Time in half-minutes since midnight (0 - 2879)
   #time = 0;
@@ -74,8 +78,7 @@ class MapLight extends SceneLight {
 
     this.#updateTime();
     this.#updateSunDirection();
-    this.#updateColors();
-    this.#updateFog();
+    this.#updateLights();
 
     super.update(camera);
   }
@@ -110,56 +113,21 @@ class MapLight extends SceneLight {
     this.sunDir.set(x, y, z);
   }
 
-  #updateColors() {
+  #updateLights() {
     if (!this.#selectedLights || this.#selectedLights.length === 0) {
       return;
     }
 
-    const light = this.#selectedLights[0];
-    const params = light.params[LIGHT_PARAM.PARAM_STANDARD];
-
-    interpolateColorTable(
-      params.intBands[LIGHT_INT_BAND.BAND_DIRECT_COLOR],
-      this.#timeProgression,
-      this.sunDiffuseColor,
-    );
-
-    interpolateColorTable(
-      params.intBands[LIGHT_INT_BAND.BAND_AMBIENT_COLOR],
-      this.#timeProgression,
-      this.sunAmbientColor,
-    );
-  }
-
-  #updateFog() {
-    if (!this.#selectedLights || this.#selectedLights.length === 0) {
-      return;
-    }
-
-    const light = this.#selectedLights[0];
-    const params = light.params[LIGHT_PARAM.PARAM_STANDARD];
-
-    interpolateColorTable(
-      params.intBands[LIGHT_INT_BAND.BAND_SKY_FOG_COLOR],
-      this.#timeProgression,
-      this.fogColor,
-    );
-
-    const fogEnd = interpolateNumericTable(
-      params.floatBands[LIGHT_FLOAT_BAND.BAND_FOG_END],
+    const { sunDiffuseColor, sunAmbientColor, fogColor, fogParams } = blendLights(
+      this.#selectedLights,
+      LIGHT_PARAM.PARAM_STANDARD,
       this.#timeProgression,
     );
 
-    const fogStartScalar = interpolateNumericTable(
-      params.floatBands[LIGHT_FLOAT_BAND.BAND_FOG_START_SCALAR],
-      this.#timeProgression,
-    );
-
-    const fogStart = fogStartScalar * fogEnd;
-
-    // TODO conditionally calculate fog rate (aka density)
-
-    this.fogParams.set(fogStart, fogEnd, 1.0, 1.0);
+    this.sunDiffuseColor.copy(sunDiffuseColor);
+    this.sunAmbientColor.copy(sunAmbientColor);
+    this.fogColor.copy(fogColor);
+    this.fogParams.copy(fogParams);
   }
 
   #selectLights(position: THREE.Vector3) {
@@ -167,32 +135,7 @@ class MapLight extends SceneLight {
       return;
     }
 
-    const selectedLights = [];
-
-    // Find lights with falloff radii overlapping position
-    for (const light of this.#lights[this.#mapId]) {
-      const distance = position.distanceTo(light.position);
-
-      if (distance <= light.falloffEnd) {
-        selectedLights.push(light);
-      }
-    }
-
-    // Find default light if no other lights were in range
-    if (selectedLights.length === 0) {
-      for (const light of this.#lights[this.#mapId]) {
-        if (
-          light.position.x === MAP_CORNER_X &&
-          light.position.y === MAP_CORNER_Y &&
-          light.falloffEnd === 0.0
-        ) {
-          selectedLights.push(light);
-          break;
-        }
-      }
-    }
-
-    this.#selectedLights = selectedLights;
+    this.#selectedLights = selectLightsForPosition(this.#lights[this.#mapId], position);
   }
 
   async #loadLights() {
