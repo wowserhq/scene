@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.0](https://github.com/wowserhq/scene/compare/v0.17.0...v0.18.0) (2024-01-13)
+
+
+### Features
+
+* **map:** blend area lights based on falloff ([06419d9](https://github.com/wowserhq/scene/commit/06419d927be1e7c76d2b440c544ac5cf6c6549c1))
+* **map:** reduce view distance based on fog end ([07996e5](https://github.com/wowserhq/scene/commit/07996e5e62327e37d9d2b973f5d29c9d6aabc33f))
+
 ## [0.17.0](https://github.com/wowserhq/scene/compare/v0.16.1...v0.17.0) (2024-01-11)
 
 
