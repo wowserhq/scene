@@ -47,7 +47,7 @@ class MapManager {
 
   #viewDistance = DEFAULT_VIEW_DISTANCE;
   #detailDistance = this.#viewDistance;
-  #cullingCamera = new THREE.PerspectiveCamera();
+
   #cullingProjection = new THREE.Matrix4();
   #cullingFrustum = new THREE.Frustum();
 
@@ -83,6 +83,10 @@ class MapManager {
 
   get clearColor() {
     return this.#mapLight.fogColor;
+  }
+
+  get cameraFar() {
+    return this.#detailDistance;
   }
 
   get mapMame() {
@@ -136,16 +140,11 @@ class MapManager {
       this.#viewDistance,
     );
 
-    // Establish culling frustum based on detail distance
-    this.#cullingCamera.copy(camera as THREE.PerspectiveCamera);
-    this.#cullingCamera.far = this.#detailDistance;
-    this.#cullingCamera.updateProjectionMatrix();
-    this.#cullingProjection.multiplyMatrices(
-      this.#cullingCamera.projectionMatrix,
-      this.#cullingCamera.matrixWorldInverse,
-    );
+    // Obtain camera frustum for use in culling groups
+    this.#cullingProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.#cullingFrustum.setFromProjectionMatrix(this.#cullingProjection);
 
+    // Cull entire groups to save on frustum intersection cost
     this.#cullGroups();
   }
 
