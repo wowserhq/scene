@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.0](https://github.com/wowserhq/scene/compare/v0.18.0...v0.19.0) (2024-01-13)
+
+
+### Features
+
+* **map:** shift camera frustum modification out of map manager ([c8d164c](https://github.com/wowserhq/scene/commit/c8d164c724d5c9cbd49801cfaa3c751b0e1d6fda))
+
+
+### Bug Fixes
+
+* **map:** correct sort order when selecting lights ([7a33fdb](https://github.com/wowserhq/scene/commit/7a33fdb99cb3318cee9dfd44a9d5e3230f847822))
+
 ## [0.18.0](https://github.com/wowserhq/scene/compare/v0.17.0...v0.18.0) (2024-01-13)
 
 
