@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { AreaLight, WeightedAreaLight } from './types.js';
 import { MAP_CORNER_X, MAP_CORNER_Y } from '@wowserhq/format';
+import { AreaLight, WeightedAreaLight } from './types.js';
 
 const clamp = (value: number, min: number, max: number) => {
   return Math.min(Math.max(value, min), max);

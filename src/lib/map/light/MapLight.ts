@@ -5,14 +5,9 @@ import {
   LightParamsRecord,
   LightRecord,
 } from '@wowserhq/format';
-import {
-  getDayNightTime,
-  interpolateColorTable,
-  interpolateNumericTable,
-  selectLightsForPosition,
-} from './util.js';
+import { getDayNightTime, interpolateNumericTable, selectLightsForPosition } from './util.js';
 import { SUN_PHI_TABLE, SUN_THETA_TABLE } from './table.js';
-import { LIGHT_FLOAT_BAND, LIGHT_INT_BAND, LIGHT_PARAM } from './const.js';
+import { LIGHT_PARAM } from './const.js';
 import { getAreaLightsFromDb } from './db.js';
 import { AreaLight, WeightedAreaLight } from './types.js';
 import SceneLight from '../../light/SceneLight.js';
