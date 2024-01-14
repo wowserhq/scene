@@ -46,8 +46,15 @@ class MapLoaderWorker extends SceneWorker {
 
     const buffers = new Set<ArrayBuffer>();
 
+    const areaTableIds = new Uint32Array(area.chunks.length);
+    buffers.add(areaTableIds.buffer);
+
     const terrainSpecs: TerrainSpec[] = [];
-    for (const chunk of area.chunks) {
+    for (let i = 0; i < area.chunks.length; i++) {
+      const chunk = area.chunks[i];
+
+      areaTableIds[i] = chunk.areaId;
+
       if (chunk.layers.length === 0) {
         continue;
       }
@@ -70,6 +77,7 @@ class MapLoaderWorker extends SceneWorker {
 
     const spec: MapAreaSpec = {
       terrain: terrainSpecs,
+      areaTableIds,
       doodadDefs: area.doodadDefs.map((def) => ({
         id: def.id,
         name: def.name,

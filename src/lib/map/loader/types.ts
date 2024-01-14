@@ -40,6 +40,7 @@ type TerrainSpec = {
 
 type MapAreaSpec = {
   terrain: TerrainSpec[];
+  areaTableIds: Uint32Array;
   doodadDefs: MapDoodadDefSpec[];
 };
 

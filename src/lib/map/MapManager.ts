@@ -1,5 +1,13 @@
 import * as THREE from 'three';
-import { Map, MAP_CHUNK_HEIGHT, MAP_AREA_COUNT_Y } from '@wowserhq/format';
+import {
+  AreaTableRecord,
+  ClientDb,
+  Map,
+  MAP_AREA_COUNT_Y,
+  MAP_CHUNK_COUNT_Y,
+  MAP_CHUNK_COUNT_X,
+  MAP_CHUNK_HEIGHT,
+} from '@wowserhq/format';
 import TerrainManager from './terrain/TerrainManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import DoodadManager from './DoodadManager.js';
@@ -19,7 +27,7 @@ type MapManagerOptions = {
   viewDistance?: number;
 };
 
-class MapManager {
+class MapManager extends EventTarget {
   #mapName: string;
   #mapDir: string;
   #map: MapSpec;
@@ -39,11 +47,15 @@ class MapManager {
 
   #mapLight: MapLight;
 
+  #areaTableDb: ClientDb<AreaTableRecord>;
+
   #target = new THREE.Vector2();
   #targetAreaX: number;
   #targetAreaY: number;
   #targetChunkX: number;
   #targetChunkY: number;
+  #targetArea: MapAreaSpec;
+  #targetAreaTableId: number;
 
   #viewDistance = DEFAULT_VIEW_DISTANCE;
   #detailDistance = this.#viewDistance;
@@ -54,6 +66,8 @@ class MapManager {
   #desiredAreas = new Set<number>();
 
   constructor(options: MapManagerOptions) {
+    super();
+
     if (options.viewDistance) {
       this.#viewDistance = options.viewDistance;
       this.#detailDistance = this.#viewDistance;
@@ -105,6 +119,7 @@ class MapManager {
 
     this.#root.name = `map:${mapName}`;
 
+    this.#loadDbs().catch((error) => console.error(error));
     this.#loadMap().catch((error) => console.error(error));
     this.#syncAreas().catch((error) => console.error(error));
 
@@ -118,6 +133,7 @@ class MapManager {
     const previousAreaY = this.#targetAreaY;
     const previousChunkX = this.#targetChunkX;
     const previousChunkY = this.#targetChunkY;
+    const previousAreaTableId = this.#targetAreaTableId;
 
     const { areaX, areaY, chunkX, chunkY } = Map.getIndicesFromPosition(x, y);
     this.#targetAreaX = areaX;
@@ -125,8 +141,26 @@ class MapManager {
     this.#targetChunkX = chunkX;
     this.#targetChunkY = chunkY;
 
+    const targetArea = this.#loadedAreas.get(this.#getAreaId(areaX, areaY));
+    if (targetArea) {
+      this.#targetArea = targetArea;
+
+      const localChunkX = chunkX % MAP_CHUNK_COUNT_X;
+      const localChunkY = chunkY % MAP_CHUNK_COUNT_Y;
+      const localChunkIndex = localChunkX * MAP_CHUNK_COUNT_Y + localChunkY;
+      const targetAreaTableId = targetArea.areaTableIds[localChunkIndex];
+
+      if (targetAreaTableId) {
+        this.#targetAreaTableId = targetAreaTableId;
+      }
+    }
+
     if (previousChunkX !== chunkX || previousChunkY !== chunkY) {
       this.#calculateDesiredAreas();
+    }
+
+    if (previousAreaTableId !== this.#targetAreaTableId) {
+      this.#handleAreaTableIdChange();
     }
   }
 
@@ -162,6 +196,28 @@ class MapManager {
         doodadGroup.userData.boundingSphere,
       );
     }
+  }
+
+  #handleAreaTableIdChange() {
+    if (!this.#areaTableDb || !this.#targetAreaTableId) {
+      return;
+    }
+
+    const areaTableRecord = this.#areaTableDb.getRecord(this.#targetAreaTableId);
+    if (!areaTableRecord) {
+      return;
+    }
+
+    const parentAreaTableRecord = this.#areaTableDb.getRecord(areaTableRecord.parentAreaId);
+
+    const detail = {
+      areaName: areaTableRecord.areaName[0],
+      areaId: areaTableRecord.id,
+      parentAreaName: parentAreaTableRecord?.areaName[0],
+      parentAreaId: parentAreaTableRecord?.id,
+    };
+
+    this.dispatchEvent(new CustomEvent('area:change', { detail }));
   }
 
   async #syncAreas() {
@@ -282,6 +338,10 @@ class MapManager {
     }
 
     this.#desiredAreas = desiredAreas;
+  }
+
+  async #loadDbs() {
+    this.#areaTableDb = await this.#dbManager.get('AreaTable.dbc', AreaTableRecord);
   }
 
   async #loadMap() {
