@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.20.0](https://github.com/wowserhq/scene/compare/v0.19.0...v0.20.0) (2024-01-14)
+
+
+### Features
+
+* **map:** emit area:change events when appropriate ([9dfffb2](https://github.com/wowserhq/scene/commit/9dfffb25f7c82ba9329da31a2c4821efafc74a83))
+
+
+### Bug Fixes
+
+* **map:** prevent exception when no area lights exist for a given map ([064c107](https://github.com/wowserhq/scene/commit/064c107638691bd7db1b88e0ca285679127732c4))
+
 ## [0.19.0](https://github.com/wowserhq/scene/compare/v0.18.0...v0.19.0) (2024-01-13)
 
 
