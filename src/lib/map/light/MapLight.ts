@@ -131,7 +131,7 @@ class MapLight extends SceneLight {
   }
 
   #selectLights(position: THREE.Vector3) {
-    if (!this.#lights || this.#mapId === undefined) {
+    if (!this.#lights || this.#mapId === undefined || !this.#lights[this.#mapId]) {
       return;
     }
 
