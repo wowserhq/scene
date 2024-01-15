@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.0](https://github.com/wowserhq/scene/compare/v0.20.0...v0.21.0) (2024-01-15)
+
+
+### Features
+
+* **map:** compute terrain bounds in loader instead of main thread ([c7d5e9b](https://github.com/wowserhq/scene/commit/c7d5e9befc6c627d4788d79be2d7a9109359f81f))
+* **model:** load model bounds instead of computing them ([a8e30f5](https://github.com/wowserhq/scene/commit/a8e30f51d618b57d5d8b869bede2be1c0b01c8dc))
+
 ## [0.20.0](https://github.com/wowserhq/scene/compare/v0.19.0...v0.20.0) (2024-01-14)
 
 
