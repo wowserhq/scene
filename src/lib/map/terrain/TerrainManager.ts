@@ -87,14 +87,27 @@ class TerrainManager {
 
     const geometry = new THREE.BufferGeometry();
 
+    // Vertex Buffer
+
     const positions = new THREE.InterleavedBuffer(new Float32Array(vertexBuffer), 4);
     geometry.setAttribute('position', new THREE.InterleavedBufferAttribute(positions, 3, 0, false));
 
     const normals = new THREE.InterleavedBuffer(new Int8Array(vertexBuffer), 16);
     geometry.setAttribute('normal', new THREE.InterleavedBufferAttribute(normals, 4, 12, true));
 
+    // Index Buffer
+
     const index = new THREE.BufferAttribute(new Uint16Array(indexBuffer), 1, false);
     geometry.setIndex(index);
+
+    // Bounds
+
+    const bounds = spec.geometry.bounds;
+
+    geometry.boundingBox = new THREE.Box3().setFromArray(bounds.extent);
+
+    const boundsCenter = new THREE.Vector3(bounds.center[0], bounds.center[1], bounds.center[2]);
+    geometry.boundingSphere = new THREE.Sphere(boundsCenter, bounds.radius);
 
     return geometry;
   }

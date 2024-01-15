@@ -1,6 +1,24 @@
 import { MAP_CHUNK_FACE_COUNT_X, MAP_CHUNK_FACE_COUNT_Y } from '@wowserhq/format';
 import { DEFAULT_TERRAIN_VERTEX_BUFFER } from './const.js';
 
+const getBoundsCenter = (extent: Float32Array) => {
+  const center = new Float32Array(3);
+
+  center[0] = (extent[0] + extent[3]) * 0.5;
+  center[1] = (extent[1] + extent[4]) * 0.5;
+  center[2] = (extent[2] + extent[5]) * 0.5;
+
+  return center;
+};
+
+const getBoundsRadius = (extent: Float32Array, center: Float32Array) => {
+  const x = extent[3] - center[0];
+  const y = extent[4] - center[1];
+  const z = extent[5] - center[2];
+
+  return Math.sqrt(x * x + y * y + z * z);
+};
+
 const isTerrainHole = (holes: number, x: number, y: number) => {
   const column = (y / 2) | 0;
   const row = (x / 2) | 0;
@@ -14,18 +32,40 @@ const createTerrainVertexBuffer = (vertexHeights: Float32Array, vertexNormals: I
   const data = DEFAULT_TERRAIN_VERTEX_BUFFER.slice(0);
   const view = new DataView(data);
 
+  let minZ = +Infinity;
+  let maxZ = -Infinity;
+
   for (let i = 0; i < vertexHeights.length; i++) {
     const vertexOfs = i * 16;
+    const vertexHeight = vertexHeights[i];
 
-    view.setFloat32(vertexOfs + 8, vertexHeights[i], true);
+    // Track bounds (z)
+    minZ = Math.min(minZ, vertexHeight);
+    maxZ = Math.max(maxZ, vertexHeight);
 
+    // Position (z)
+    view.setFloat32(vertexOfs + 8, vertexHeight, true);
+
+    // Normal
     const normalOfs = i * 3;
     view.setInt8(vertexOfs + 12, vertexNormals[normalOfs + 0]);
     view.setInt8(vertexOfs + 13, vertexNormals[normalOfs + 1]);
     view.setInt8(vertexOfs + 14, vertexNormals[normalOfs + 2]);
   }
 
-  return data;
+  const minX = view.getFloat32(data.byteLength - 16, true);
+  const minY = view.getFloat32(data.byteLength - 12, true);
+  const maxX = view.getFloat32(0, true);
+  const maxY = view.getFloat32(4, true);
+
+  const extent = new Float32Array([minX, minY, minZ, maxX, maxY, maxZ]);
+  const center = getBoundsCenter(extent);
+  const radius = getBoundsRadius(extent, center);
+
+  return {
+    bounds: { extent, center, radius },
+    vertexBuffer: data,
+  };
 };
 
 const createTerrainIndexBuffer = (holes: number) => {

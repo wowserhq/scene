@@ -109,10 +109,14 @@ class MapLoaderWorker extends SceneWorker {
   }
 
   #createTerrainGeometrySpec(chunk: MapChunk) {
-    const vertexBuffer = createTerrainVertexBuffer(chunk.vertexHeights, chunk.vertexNormals);
+    const { vertexBuffer, bounds } = createTerrainVertexBuffer(
+      chunk.vertexHeights,
+      chunk.vertexNormals,
+    );
     const indexBuffer = createTerrainIndexBuffer(chunk.holes);
 
     return {
+      bounds,
       vertexBuffer,
       indexBuffer,
     };
