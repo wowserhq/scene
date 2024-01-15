@@ -68,7 +68,7 @@ class ModelManager {
   async #loadResources(refId: string, path: string) {
     const spec = await this.#loader.loadSpec(path);
 
-    const geometry = await this.#createGeometry(spec);
+    const geometry = this.#createGeometry(spec);
     const materials = await this.#createMaterials(spec);
 
     const resources: ModelResources = {
@@ -83,7 +83,7 @@ class ModelManager {
     return resources;
   }
 
-  async #createGeometry(spec: ModelSpec) {
+  #createGeometry(spec: ModelSpec) {
     const vertexBuffer = spec.geometry.vertexBuffer;
     const indexBuffer = spec.geometry.indexBuffer;
 
