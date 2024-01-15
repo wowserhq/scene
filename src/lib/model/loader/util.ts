@@ -37,4 +37,14 @@ const getFragmentShader = (combiners: M2_TEXTURE_COMBINER[]): MODEL_SHADER_FRAGM
   return MODEL_SHADER_FRAGMENT.FRAGMENT_UNKNOWN;
 };
 
-export { getVertexShader, getFragmentShader };
+const getBoundsCenter = (extent: Float32Array) => {
+  const center = new Float32Array(3);
+
+  center[0] = (extent[0] + extent[3]) * 0.5;
+  center[1] = (extent[1] + extent[4]) * 0.5;
+  center[2] = (extent[2] + extent[5]) * 0.5;
+
+  return center;
+};
+
+export { getVertexShader, getFragmentShader, getBoundsCenter };

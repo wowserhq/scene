@@ -1,6 +1,6 @@
 import { M2Batch, M2Model, M2SkinProfile } from '@wowserhq/format';
 import { ModelSpec } from './types.js';
-import { getFragmentShader, getVertexShader } from './util.js';
+import { getBoundsCenter, getFragmentShader, getVertexShader } from './util.js';
 import SceneWorker from '../../worker/SceneWorker.js';
 import { AssetHost, loadAsset } from '../../asset.js';
 
@@ -55,6 +55,11 @@ class ModelLoaderWorker extends SceneWorker {
   }
 
   #createGeometrySpec(model: M2Model, skinProfile: M2SkinProfile) {
+    const bounds = {
+      extent: model.bounds.extent,
+      center: getBoundsCenter(model.bounds.extent),
+      radius: model.bounds.radius,
+    };
     const vertexBuffer = this.#extractVertices(model, skinProfile);
     const indexBuffer = skinProfile.indices.buffer;
 
@@ -69,6 +74,7 @@ class ModelLoaderWorker extends SceneWorker {
     }
 
     return {
+      bounds,
       vertexBuffer,
       indexBuffer,
       groups,

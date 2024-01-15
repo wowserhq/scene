@@ -126,6 +126,17 @@ class ModelManager {
       geometry.addGroup(group.start, group.count, group.materialIndex);
     }
 
+    // Bounds
+
+    geometry.boundingBox = new THREE.Box3().setFromArray(spec.geometry.bounds.extent);
+
+    const boundsCenter = new THREE.Vector3(
+      spec.geometry.bounds.center[0],
+      spec.geometry.bounds.center[1],
+      spec.geometry.bounds.center[2],
+    );
+    geometry.boundingSphere = new THREE.Sphere(boundsCenter, spec.geometry.bounds.radius);
+
     return geometry;
   }
 
