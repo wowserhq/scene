@@ -211,9 +211,9 @@ class MapManager extends EventTarget {
     const parentAreaTableRecord = this.#areaTableDb.getRecord(areaTableRecord.parentAreaId);
 
     const detail = {
-      areaName: areaTableRecord.areaName[0],
+      areaName: areaTableRecord.areaName,
       areaId: areaTableRecord.id,
-      parentAreaName: parentAreaTableRecord?.areaName[0],
+      parentAreaName: parentAreaTableRecord?.areaName,
       parentAreaId: parentAreaTableRecord?.id,
     };
 
