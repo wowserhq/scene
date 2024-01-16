@@ -16,6 +16,7 @@ import MapLoader from './loader/MapLoader.js';
 import { MapAreaSpec, MapSpec } from './loader/types.js';
 import MapLight from './light/MapLight.js';
 import DbManager from '../db/DbManager.js';
+import SoundManager from '../sound/SoundManager.js';
 
 const DEFAULT_VIEW_DISTANCE = 1277.0;
 const DETAIL_DISTANCE_EXTENSION = MAP_CHUNK_HEIGHT;
@@ -24,6 +25,7 @@ type MapManagerOptions = {
   host: AssetHost;
   textureManager?: TextureManager;
   dbManager?: DbManager;
+  soundManager?: SoundManager;
   viewDistance?: number;
 };
 
@@ -44,6 +46,7 @@ class MapManager extends EventTarget {
   #terrainManager: TerrainManager;
   #doodadManager: DoodadManager;
   #dbManager: DbManager;
+  #soundManager: SoundManager;
 
   #mapLight: MapLight;
 
@@ -75,6 +78,8 @@ class MapManager extends EventTarget {
 
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
     this.#dbManager = options.dbManager ?? new DbManager({ host: options.host });
+    this.#soundManager =
+      options.soundManager ?? new SoundManager({ host: options.host, dbManager: this.#dbManager });
     this.#loader = new MapLoader({ host: options.host });
 
     this.#mapLight = new MapLight({ dbManager: this.#dbManager });
@@ -160,7 +165,7 @@ class MapManager extends EventTarget {
     }
 
     if (previousAreaTableId !== this.#targetAreaTableId) {
-      this.#handleAreaTableIdChange();
+      this.#handleAreaTableChange();
     }
   }
 
@@ -198,7 +203,7 @@ class MapManager extends EventTarget {
     }
   }
 
-  #handleAreaTableIdChange() {
+  #handleAreaTableChange() {
     if (!this.#areaTableDb || !this.#targetAreaTableId) {
       return;
     }
@@ -209,6 +214,12 @@ class MapManager extends EventTarget {
     }
 
     const parentAreaTableRecord = this.#areaTableDb.getRecord(areaTableRecord.parentAreaId);
+
+    // Sound
+
+    this.#soundManager.setZoneMusic(areaTableRecord.zoneMusic);
+
+    // Event
 
     const detail = {
       areaName: areaTableRecord.areaName,
