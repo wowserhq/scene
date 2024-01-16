@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/wowserhq/scene/compare/v0.21.0...v0.22.0) (2024-01-16)
+
+
+### Features
+
+* **map:** play zone music when available ([5559c88](https://github.com/wowserhq/scene/commit/5559c881f7c4a527ef8d71dd95bb8b815581effc))
+
 ## [0.21.0](https://github.com/wowserhq/scene/compare/v0.20.0...v0.21.0) (2024-01-15)
 
 
