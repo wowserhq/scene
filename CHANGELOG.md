@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0](https://github.com/wowserhq/scene/compare/v0.23.0...v0.24.0) (2024-01-17)
+
+
+### Features
+
+* **map:** add initial implementation of dispose ([f569dbe](https://github.com/wowserhq/scene/commit/f569dbe2f9671b83792dde0928607a662866e115))
+
 ## [0.23.0](https://github.com/wowserhq/scene/compare/v0.22.0...v0.23.0) (2024-01-17)
 
 
