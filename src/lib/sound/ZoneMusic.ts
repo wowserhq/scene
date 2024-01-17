@@ -66,7 +66,7 @@ class ZoneMusic {
 
     // Avoid carrying zone music across zones
     if (this.#state === STATE.STATE_PLAYING) {
-      this.#stop();
+      this.#stop(FADE_OUT);
     }
   }
 
@@ -75,10 +75,16 @@ class ZoneMusic {
     this.#soundRecords = null;
   }
 
-  #stop() {
+  dispose() {
+    clearTimeout(this.#scheduleTimeout);
+    this.clear();
+    this.#soundManager = null;
+  }
+
+  #stop(duration: number) {
     this.#state = STATE.STATE_STOPPING;
 
-    this.#soundManager.stopMusic(FADE_OUT);
+    this.#soundManager.stopMusic(duration);
   }
 
   #getNextPlay() {

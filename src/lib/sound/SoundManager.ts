@@ -60,6 +60,11 @@ class SoundManager {
     this.#musicSource = new THREE.Audio(this.#musicListener);
   }
 
+  dispose() {
+    this.stopMusic(0);
+    this.#zoneMusic.dispose();
+  }
+
   playMusic(soundEntries: SoundEntriesRecord, onEnded?: () => void) {
     if (!this.#musicSource) {
       this.#initializeAudioSources();

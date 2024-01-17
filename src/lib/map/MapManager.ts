@@ -68,6 +68,8 @@ class MapManager extends EventTarget {
 
   #desiredAreas = new Set<number>();
 
+  #ownedManagers = new Set<any>();
+
   constructor(options: MapManagerOptions) {
     super();
 
@@ -78,8 +80,14 @@ class MapManager extends EventTarget {
 
     this.#textureManager = options.textureManager ?? new TextureManager({ host: options.host });
     this.#dbManager = options.dbManager ?? new DbManager({ host: options.host });
-    this.#soundManager =
-      options.soundManager ?? new SoundManager({ host: options.host, dbManager: this.#dbManager });
+
+    if (options.soundManager) {
+      this.#soundManager = options.soundManager;
+    } else {
+      this.#soundManager = new SoundManager({ host: options.host, dbManager: this.#dbManager });
+      this.#ownedManagers.add(this.#soundManager);
+    }
+
     this.#loader = new MapLoader({ host: options.host });
 
     this.#mapLight = new MapLight({ dbManager: this.#dbManager });
@@ -185,6 +193,12 @@ class MapManager extends EventTarget {
 
     // Cull entire groups to save on frustum intersection cost
     this.#cullGroups();
+  }
+
+  dispose() {
+    for (const manager of this.#ownedManagers.values()) {
+      manager.dispose();
+    }
   }
 
   #cullGroups() {
