@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.1](https://github.com/wowserhq/scene/compare/v0.24.0...v0.24.1) (2024-01-17)
+
+
+### Bug Fixes
+
+* **map:** use parent zone music if subzone music isn't set ([7ab94ca](https://github.com/wowserhq/scene/commit/7ab94cad555ca3c4759fbe999d688a0d8b33af27))
+
 ## [0.24.0](https://github.com/wowserhq/scene/compare/v0.23.0...v0.24.0) (2024-01-17)
 
 
