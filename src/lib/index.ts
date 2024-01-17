@@ -1,3 +1,5 @@
+import './tween.js';
+
 export * from './controls/MapControls.js';
 export * from './controls/OrbitControls.js';
 export * from './db/DbManager.js';
