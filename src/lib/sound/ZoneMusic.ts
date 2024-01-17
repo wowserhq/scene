@@ -1,20 +1,42 @@
-import * as THREE from 'three';
 import { SoundEntriesRecord, ZoneMusicRecord } from '@wowserhq/format';
 import { SOUND_AMBIENCE } from './const.js';
 import { getRandomInt } from './util.js';
+import SoundManager from './SoundManager.js';
+
+enum STATE {
+  STATE_INITIALIZED = 0,
+  STATE_SILENT,
+  STATE_PLAYING,
+  STATE_STOPPING,
+}
+
+const SCHEDULE_INTERVAL = 1000;
+const FADE_OUT = 4000;
 
 class ZoneMusic {
+  #soundManager: SoundManager;
+  #ambience: SOUND_AMBIENCE;
+
+  // Tracks the timeout ID for the scheduling loop
+  #scheduleTimeout: ReturnType<typeof setTimeout>;
+
+  #state: STATE;
+
   #musicRecord: ZoneMusicRecord;
   #soundRecords: SoundEntriesRecord[];
-  #sounds: Record<string, AudioBuffer>;
-  #ambience: SOUND_AMBIENCE;
-  #audioSource: THREE.Audio;
-  #scheduleTimeout: ReturnType<typeof setTimeout>;
-  #lastPlayed: number;
 
-  constructor(audioSource: THREE.Audio) {
-    this.#audioSource = audioSource;
+  #lastPlay: number;
+  #nextPlay: number;
+
+  constructor(soundManager: SoundManager) {
+    this.#soundManager = soundManager;
     this.#ambience = SOUND_AMBIENCE.AMBIENCE_DAY;
+    this.#state = STATE.STATE_INITIALIZED;
+    this.#lastPlay = null;
+    this.#nextPlay = null;
+
+    // Kick off scheduling loop
+    this.#schedule().catch((error) => console.error(error));
   }
 
   get ambience() {
@@ -25,67 +47,90 @@ class ZoneMusic {
     this.#ambience = ambience;
   }
 
-  resume() {
-    this.#schedule();
+  get lastPlay() {
+    return this.#lastPlay;
   }
 
-  stop() {
-    this.#audioSource.stop();
-    this.#audioSource.onEnded = null;
-
-    this.suspend();
+  get nextPlay() {
+    return this.#nextPlay;
   }
 
-  suspend() {
-    clearTimeout(this.#scheduleTimeout);
-    this.#scheduleTimeout = null;
-  }
-
-  update(
-    musicRecord: ZoneMusicRecord,
-    soundRecords: SoundEntriesRecord[],
-    sounds: Record<string, AudioBuffer>,
-  ) {
-    this.#musicRecord = musicRecord;
-    this.#soundRecords = soundRecords;
-    this.#sounds = sounds;
-  }
-
-  #play() {
-    const soundEntries = this.#soundRecords[this.#ambience];
-    const soundFiles = soundEntries.file.filter((file) => file.trim().length > 0);
-
-    // TODO use freq as weight
-    const soundFile = soundFiles[getRandomInt(0, soundFiles.length - 1)];
-
-    const soundBuffer = this.#sounds[soundFile];
-    this.#audioSource.setBuffer(soundBuffer);
-
-    this.#audioSource.onEnded = () => {
-      this.#audioSource.isPlaying = false;
-      this.#lastPlayed = Date.now();
-      this.#scheduleTimeout = null;
-
-      this.#schedule();
-    };
-
-    this.#audioSource.play();
-  }
-
-  #schedule() {
-    if (this.#audioSource.isPlaying || this.#scheduleTimeout) {
+  set(musicRecord: ZoneMusicRecord, soundRecords: SoundEntriesRecord[]) {
+    // Treat setting same music as a noop
+    if (this.#musicRecord?.id === musicRecord?.id) {
       return;
     }
 
+    this.#musicRecord = musicRecord;
+    this.#soundRecords = soundRecords;
+
+    // Avoid carrying zone music across zones
+    if (this.#state === STATE.STATE_PLAYING) {
+      this.#stop();
+    }
+  }
+
+  clear() {
+    this.#musicRecord = null;
+    this.#soundRecords = null;
+  }
+
+  #stop() {
+    this.#state = STATE.STATE_STOPPING;
+
+    this.#soundManager.stopMusic(FADE_OUT);
+  }
+
+  #getNextPlay() {
     const silenceMin = this.#musicRecord.silenceIntervalMin[this.#ambience];
     const silenceMax = this.#musicRecord.silenceIntervalMax[this.#ambience];
-    const silence = getRandomInt(silenceMin, silenceMax);
 
-    // Truncate silence by last played
-    const elapsed = this.#lastPlayed ? Date.now() - this.#lastPlayed : 0;
-    const delay = Math.max(silence - elapsed, 0);
+    return Date.now() + getRandomInt(silenceMin, silenceMax);
+  }
 
-    this.#scheduleTimeout = setTimeout(() => this.#play(), delay);
+  #play() {
+    // Select sound entries for current ambience (day / night)
+    const soundEntries = this.#soundRecords[this.#ambience];
+
+    this.#state = STATE.STATE_PLAYING;
+
+    return this.#soundManager.playMusic(soundEntries, () => {
+      this.#lastPlay = Date.now();
+      this.#nextPlay = null;
+      this.#state = STATE.STATE_SILENT;
+    });
+  }
+
+  async #evaluate() {
+    if (!this.#musicRecord) {
+      return;
+    }
+
+    if (this.#state === STATE.STATE_PLAYING) {
+      return;
+    }
+
+    if (this.#state === STATE.STATE_INITIALIZED) {
+      return this.#play();
+    }
+
+    if (this.#state === STATE.STATE_SILENT) {
+      if (this.#nextPlay === null) {
+        this.#nextPlay = this.#getNextPlay();
+      }
+
+      if (Date.now() > this.#nextPlay) {
+        return this.#play();
+      }
+    }
+  }
+
+  async #schedule() {
+    // Schedule or play music
+    await this.#evaluate();
+
+    // Tee up the next tick of the scheduling loop
+    this.#scheduleTimeout = setTimeout(() => this.#schedule(), SCHEDULE_INTERVAL);
   }
 }
 
