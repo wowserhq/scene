@@ -231,7 +231,16 @@ class MapManager extends EventTarget {
 
     // Sound
 
-    this.#soundManager.setZoneMusic(areaTableRecord.zoneMusic);
+    const useParentZoneMusic =
+      areaTableRecord.zoneMusic === 0 &&
+      (areaTableRecord.flags & 0x40000000) !== 0 &&
+      !!parentAreaTableRecord;
+
+    const zoneMusic = useParentZoneMusic
+      ? parentAreaTableRecord.zoneMusic
+      : areaTableRecord.zoneMusic;
+
+    this.#soundManager.setZoneMusic(zoneMusic);
 
     // Event
 
