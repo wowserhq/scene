@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.0](https://github.com/wowserhq/scene/compare/v0.22.0...v0.23.0) (2024-01-17)
+
+
+### Features
+
+* **map:** adjust zone music behavior to match client ([75f831a](https://github.com/wowserhq/scene/commit/75f831adacf5f947c36ffb5c9bfbc8c5d2a8afa4))
+
 ## [0.22.0](https://github.com/wowserhq/scene/compare/v0.21.0...v0.22.0) (2024-01-16)
 
 
