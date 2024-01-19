@@ -6,7 +6,6 @@ import ModelMesh from './ModelMesh.js';
 import ModelMaterial from './ModelMaterial.js';
 import { getVertexShader } from './shader/vertex.js';
 import { getFragmentShader } from './shader/fragment.js';
-import { M2_MATERIAL_PASS } from './const.js';
 import ModelLoader from './loader/ModelLoader.js';
 import { MaterialSpec, ModelSpec, TextureSpec } from './loader/types.js';
 import SceneLight from '../light/SceneLight.js';
@@ -158,7 +157,6 @@ class ModelManager {
       textures,
       uniforms,
       spec.blend,
-      M2_MATERIAL_PASS.PASS_0,
       spec.flags,
     );
   }

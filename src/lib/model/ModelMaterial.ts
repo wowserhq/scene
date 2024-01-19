@@ -1,22 +1,22 @@
 import * as THREE from 'three';
 import { M2_MATERIAL_BLEND, M2_MATERIAL_FLAG } from '@wowserhq/format';
-import { M2_MATERIAL_BLEND_TO_THREE_BLEND, M2_MATERIAL_PASS } from './const.js';
+import {
+  M2_MATERIAL_BLEND_TO_THREE_BLEND_OPAQUE,
+  M2_MATERIAL_BLEND_TO_THREE_BLEND_TRANSPARENT,
+} from './const.js';
 import { THREE_BLEND_STATE } from '../blend.js';
 
 const DEFAULT_BLEND: M2_MATERIAL_BLEND = M2_MATERIAL_BLEND.BLEND_OPAQUE;
-const DEFAULT_PASS: M2_MATERIAL_PASS = M2_MATERIAL_PASS.PASS_0;
 const DEFAULT_FLAGS: number = 0x0;
 const DEFAULT_ALPHA: number = 1.0;
 
-const getThreeBlendState = (blend: M2_MATERIAL_BLEND, pass: M2_MATERIAL_PASS) =>
-  THREE_BLEND_STATE[M2_MATERIAL_BLEND_TO_THREE_BLEND[pass][blend]];
-
 class ModelMaterial extends THREE.RawShaderMaterial {
   #blend: M2_MATERIAL_BLEND;
-  #pass: M2_MATERIAL_PASS;
 
-  #alphaRef: number;
-  #alpha: number;
+  #materialParams: THREE.Vector4;
+
+  #diffuseColor: THREE.Color;
+  #emissiveColor: THREE.Color;
 
   constructor(
     vertexShader: string,
@@ -24,60 +24,141 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     textures: THREE.Texture[],
     uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
-    pass = DEFAULT_PASS,
     flags = DEFAULT_FLAGS,
   ) {
     super();
 
     this.#blend = blend;
-    this.#pass = pass;
+
+    this.#materialParams = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+
+    if (this.#blend === M2_MATERIAL_BLEND.BLEND_MOD) {
+      this.#diffuseColor = new THREE.Color(0.0, 0.0, 0.0);
+      this.#emissiveColor = new THREE.Color(1.0, 1.0, 1.0);
+    } else if (this.#blend === M2_MATERIAL_BLEND.BLEND_MOD2X) {
+      this.#diffuseColor = new THREE.Color(0.0, 0.0, 0.0);
+      this.#emissiveColor = new THREE.Color(0.5, 0.5, 0.5);
+    } else {
+      this.#diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
+      this.#emissiveColor = new THREE.Color(0.0, 0.0, 0.0);
+    }
 
     this.side = flags & M2_MATERIAL_FLAG.FLAG_TWO_SIDED ? THREE.DoubleSide : THREE.FrontSide;
     this.depthTest = !(flags & M2_MATERIAL_FLAG.FLAG_DISABLE_DEPTH_TEST);
     this.depthWrite = !(flags & M2_MATERIAL_FLAG.FLAG_DISABLE_DEPTH_WRITE);
+    this.lit = flags & M2_MATERIAL_FLAG.FLAG_DISABLE_LIGHTING ? 0.0 : 1.0;
+    this.fogged = flags & M2_MATERIAL_FLAG.FLAG_DISABLE_FOG ? 0.0 : 1.0;
     this.alpha = DEFAULT_ALPHA;
 
     this.glslVersion = THREE.GLSL3;
     this.vertexShader = vertexShader;
     this.fragmentShader = fragmentShader;
 
-    const threeBlendState = getThreeBlendState(this.#blend, this.#pass);
-    const { blending, blendSrc, blendSrcAlpha, blendDst, blendDstAlpha } = threeBlendState;
-
-    this.blending = blending;
-    this.blendSrc = blendSrc;
-    this.blendSrcAlpha = blendSrcAlpha;
-    this.blendDst = blendDst;
-    this.blendDstAlpha = blendDstAlpha;
+    this.#updateBlending();
 
     this.uniforms = {
       ...uniforms,
       textures: { value: textures },
-      alphaRef: { value: this.#alphaRef },
+      materialParams: { value: this.#materialParams },
+      diffuseColor: { value: this.#diffuseColor },
+      emissiveColor: { value: this.#emissiveColor },
     };
   }
 
-  get alphaRef() {
-    return this.#alphaRef;
-  }
-
   get alpha() {
-    return this.#alpha;
+    return this.#materialParams.x;
   }
 
   set alpha(alpha: number) {
-    this.#alpha = alpha;
+    if (this.#materialParams.x === alpha) {
+      return;
+    }
+
+    this.#materialParams.x = alpha;
 
     // Opaque - keep all pixels, regardless of alpha
     // Alpha key - scale pixel test by alpha
     // Other - keep all pixels that aren't fully transparent
     if (this.#blend === M2_MATERIAL_BLEND.BLEND_OPAQUE) {
-      this.#alphaRef = 0.0;
+      this.#materialParams.y = 0.0;
     } else if (this.#blend === M2_MATERIAL_BLEND.BLEND_ALPHA_KEY) {
-      this.#alphaRef = alpha * (224.0 / 255.0);
+      this.#materialParams.y = alpha * (224.0 / 255.0);
     } else {
-      this.#alphaRef = 1.0 / 255.0;
+      this.#materialParams.y = 1.0 / 255.0;
     }
+
+    this.uniformsNeedUpdate = true;
+
+    this.#updateBlending();
+  }
+
+  get alphaRef() {
+    return this.#materialParams.y;
+  }
+
+  get fogged() {
+    return this.#materialParams.w;
+  }
+
+  set fogged(fogged: number) {
+    this.#materialParams.setW(fogged);
+  }
+
+  get lit() {
+    return this.#materialParams.z;
+  }
+
+  set lit(lit: number) {
+    this.#materialParams.setZ(lit);
+  }
+
+  setDiffuseColor(color: THREE.Color) {
+    // Materials using BLEND_MOD and BLEND_MOD2X use hardcoded colors
+    if (
+      this.#blend === M2_MATERIAL_BLEND.BLEND_MOD ||
+      this.#blend === M2_MATERIAL_BLEND.BLEND_MOD2X
+    ) {
+      return;
+    }
+
+    if (this.#diffuseColor.equals(color)) {
+      return;
+    }
+
+    this.#diffuseColor.copy(color);
+    this.uniformsNeedUpdate = true;
+  }
+
+  setEmissiveColor(color: THREE.Color) {
+    // Materials using BLEND_MOD and BLEND_MOD2X use hardcoded colors
+    if (
+      this.#blend === M2_MATERIAL_BLEND.BLEND_MOD ||
+      this.#blend === M2_MATERIAL_BLEND.BLEND_MOD2X
+    ) {
+      return;
+    }
+
+    if (this.#emissiveColor.equals(color)) {
+      return;
+    }
+
+    this.#emissiveColor.copy(color);
+    this.uniformsNeedUpdate = true;
+  }
+
+  #updateBlending() {
+    // Adjust OPAQUE and ALPHA_KEY blends if the material's alpha value is below 1.0
+    const isOpaque = this.#blend <= M2_MATERIAL_BLEND.BLEND_ALPHA_KEY && this.alpha >= 0.99998999;
+    const threeBlend = isOpaque
+      ? M2_MATERIAL_BLEND_TO_THREE_BLEND_OPAQUE[this.#blend]
+      : M2_MATERIAL_BLEND_TO_THREE_BLEND_TRANSPARENT[this.#blend];
+    const threeBlendState = THREE_BLEND_STATE[threeBlend];
+    const { blending, blendSrc, blendDst } = threeBlendState;
+
+    this.blending = blending;
+    this.blendSrc = blendSrc;
+    this.blendDst = blendDst;
+    this.transparent = blending !== THREE.NoBlending;
   }
 }
 

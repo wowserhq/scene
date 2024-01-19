@@ -6,9 +6,11 @@ const FRAGMENT_SHADER_PRECISION = 'highp float';
 
 const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'textures[2]', type: 'sampler2D' },
-  { name: 'alphaRef', type: 'float' },
+  { name: 'materialParams', type: 'vec4' },
   { name: 'sunDiffuseColor', type: 'vec3' },
   { name: 'sunAmbientColor', type: 'vec3' },
+  { name: 'diffuseColor', type: 'vec3' },
+  { name: 'emissiveColor', type: 'vec3' },
 ];
 
 const FRAGMENT_SHADER_INPUTS = [{ name: 'vLight', type: 'float' }];
@@ -18,56 +20,56 @@ const FRAGMENT_SHADER_OUTPUTS = [{ name: 'color', type: 'vec4' }];
 const FRAGMENT_SHADER_FUNCTIONS = [];
 
 const FRAGMENT_SHADER_COMBINERS = `
-void combine_opaque(inout vec4 color, in vec4 tex0) {
+void combineOpaque(inout vec4 color, in vec4 tex0) {
   color.rgb = color.rgb * tex0.rgb;
 }
 
-void combine_add(inout vec4 color, in vec4 tex0) {
+void combineAdd(inout vec4 color, in vec4 tex0) {
   color.rgb = color.rgb + tex0.rgb;
   color.a = color.a + tex0.a;
 }
 
-void combine_decal(inout vec4 color, in vec4 tex0) {
+void combineDecal(inout vec4 color, in vec4 tex0) {
   color.rgb = mix(color.rgb, tex0.rgb, color.a);
 }
 
-void combine_fade(inout vec4 color, in vec4 tex0) {
+void combineFade(inout vec4 color, in vec4 tex0) {
   color.rgb = mix(tex0.rgb, color.rgb, color.a);
 }
 
-void combine_mod(inout vec4 color, in vec4 tex0) {
+void combineMod(inout vec4 color, in vec4 tex0) {
   color.rgb = color.rgb * tex0.rgb;
   color.a = color.a * tex0.a;
 }
 
-void combine_mod2x(inout vec4 color, in vec4 tex0) {
+void combineMod2x(inout vec4 color, in vec4 tex0) {
   color.rgb = color.rgb * tex0.rgb * 2.0;
   color.a = color.a * tex0.a * 2.0;
 }
 
-void combine_opaque_add(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueAdd(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) + tex1.rgb;
   color.a = color.a + tex1.a;
 }
 
-void combine_opaque_addalpha(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueAddAlpha(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) + (tex1.rgb * tex1.a);
 }
 
-void combine_opaque_addalpha_alpha(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueAddAlphaAlpha(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) + (tex1.rgb * tex1.a * tex0.a);
 }
 
-void combine_opaque_addna(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueAddNa(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) + tex1.rgb;
 }
 
-void combine_opaque_mod(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueMod(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb;
   color.a = color.a * tex1.a;
 }
 
-void combine_opaque_mod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+void combineOpaqueMod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb * 2.0;
   color.a = color.a * tex1.a * 2.0;
 }
@@ -75,18 +77,23 @@ void combine_opaque_mod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
 
 const FRAGMENT_SHADER_MAIN_ALPHATEST = `
 // Alpha test
-if (color.a < alphaRef) {
+if (color.a < materialParams.y) {
   discard;
 }
 `;
 
 const FRAGMENT_SHADER_MAIN_LIGHTING = `
-color.rgb *= sunDiffuseColor * vLight + sunAmbientColor;
+vec3 sunColor = clamp((sunDiffuseColor * vLight) + sunAmbientColor, 0.0, 1.0);
+color.rgb = mix(color.rgb, color.rgb * sunColor, materialParams.z);
+`;
+
+const FRAGMENT_SHADER_MAIN_COLOR = `
+color.rgb = clamp((color.rgb * diffuseColor.rgb) + emissiveColor.rgb, 0.0, 1.0);
 `;
 
 const FRAGMENT_SHADER_MAIN_FOG = `
 // Apply fog
-applyFog(color, ${UNIFORM_FOG_COLOR.name}, ${VARIABLE_FOG_FACTOR.name});
+applyFog(color, ${UNIFORM_FOG_COLOR.name}, ${VARIABLE_FOG_FACTOR.name} * materialParams.w);
 `;
 
 const createFragmentShader = (textureCount: number, combineFunction: string) => {
@@ -130,6 +137,10 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
 
   main.push(`color.rgba = vec4(1.0, 1.0, 1.0, 1.0);`);
 
+  main.push(FRAGMENT_SHADER_MAIN_LIGHTING);
+
+  main.push(FRAGMENT_SHADER_MAIN_COLOR);
+
   if (textureCount === 1) {
     main.push(`vec4 tex0 = texture(textures[0], vTexCoord1);`);
     main.push(`${combineFunction}(color, tex0);`);
@@ -140,15 +151,19 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
   }
 
   main.push(FRAGMENT_SHADER_MAIN_ALPHATEST);
-  main.push(FRAGMENT_SHADER_MAIN_LIGHTING);
+
   main.push(FRAGMENT_SHADER_MAIN_FOG);
 
   return composeShader(precision, uniforms, inputs, outputs, functions, main);
 };
 
 const FRAGMENT_SHADER = {
-  COMBINER_OPAQUE: createFragmentShader(1, 'combine_opaque'),
-  COMBINER_MOD: createFragmentShader(1, 'combine_mod'),
+  COMBINER_OPAQUE: createFragmentShader(1, 'combineOpaque'),
+  COMBINER_MOD: createFragmentShader(1, 'combineMod'),
+  COMBINER_DECAL: createFragmentShader(1, 'combineDecal'),
+  COMBINER_ADD: createFragmentShader(1, 'combineAdd'),
+  COMBINER_MOD2X: createFragmentShader(1, 'combineMod2x'),
+  COMBINER_FADE: createFragmentShader(1, 'combineFade'),
   DEFAULT: createFragmentShader(0, ''),
 };
 
@@ -159,6 +174,14 @@ const getFragmentShader = (shader: MODEL_SHADER_FRAGMENT) => {
     return FRAGMENT_SHADER.COMBINER_OPAQUE;
   } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_MOD) {
     return FRAGMENT_SHADER.COMBINER_MOD;
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_DECAL) {
+    return FRAGMENT_SHADER.COMBINER_ADD;
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_ADD) {
+    return FRAGMENT_SHADER.COMBINER_ADD;
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_MOD2X) {
+    return FRAGMENT_SHADER.COMBINER_MOD2X;
+  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_FADE) {
+    return FRAGMENT_SHADER.COMBINER_FADE;
   }
 
   return FRAGMENT_SHADER.DEFAULT;
