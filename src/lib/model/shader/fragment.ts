@@ -178,7 +178,14 @@ const FRAGMENT_SHADER = {
   [M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN]: createFragmentShader(0, ''),
 };
 
-const getFragmentShader = (shader: M2_FRAGMENT_SHADER) =>
-  FRAGMENT_SHADER[shader] ?? FRAGMENT_SHADER[M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN];
+const getFragmentShader = (shader: M2_FRAGMENT_SHADER) => {
+  if (FRAGMENT_SHADER[shader]) {
+    return FRAGMENT_SHADER[shader];
+  }
+
+  console.warn(`model: unimplemented fragment shader ${M2_FRAGMENT_SHADER[shader]}`);
+
+  return FRAGMENT_SHADER[M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN];
+};
 
 export { getFragmentShader };

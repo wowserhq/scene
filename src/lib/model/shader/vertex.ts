@@ -132,7 +132,14 @@ const VERTEX_SHADER = {
   [M2_VERTEX_SHADER.VERTEX_UNKNOWN]: createVertexShader(),
 };
 
-const getVertexShader = (shader: M2_VERTEX_SHADER) =>
-  VERTEX_SHADER[shader] ?? VERTEX_SHADER[M2_VERTEX_SHADER.VERTEX_UNKNOWN];
+const getVertexShader = (shader: M2_VERTEX_SHADER) => {
+  if (VERTEX_SHADER[shader]) {
+    return VERTEX_SHADER[shader];
+  }
+
+  console.warn(`model: unimplemented vertex shader ${M2_VERTEX_SHADER[shader]}`);
+
+  return VERTEX_SHADER[M2_VERTEX_SHADER.VERTEX_UNKNOWN];
+};
 
 export { getVertexShader };
