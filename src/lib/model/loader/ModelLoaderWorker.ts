@@ -1,6 +1,6 @@
 import { M2Batch, M2Model, M2SkinProfile } from '@wowserhq/format';
 import { ModelSpec } from './types.js';
-import { getBoundsCenter, getFragmentShader, getVertexShader } from './util.js';
+import { getBoundsCenter } from './util.js';
 import SceneWorker from '../../worker/SceneWorker.js';
 import { AssetHost, loadAsset } from '../../asset.js';
 
@@ -87,23 +87,17 @@ class ModelLoaderWorker extends SceneWorker {
 
   #createMaterialSpec(batch: M2Batch) {
     const textures = batch.textures.map((texture) => ({
-      flags: texture.texture.flags,
-      component: texture.texture.component,
-      path: texture.texture.filename,
+      flags: texture.flags,
+      component: texture.component,
+      path: texture.filename,
     }));
-
-    const coords = batch.textures.map((texture) => texture.textureCoord);
-    const vertexShader = getVertexShader(coords);
-
-    const combiners = batch.textures.map((texture) => texture.textureCombiner);
-    const fragmentShader = getFragmentShader(combiners);
 
     return {
       flags: batch.material.flags,
       blend: batch.material.blend,
       textures,
-      vertexShader,
-      fragmentShader,
+      vertexShader: batch.vertexShader,
+      fragmentShader: batch.fragmentShader,
     };
   }
 }

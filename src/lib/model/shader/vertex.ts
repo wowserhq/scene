@@ -1,5 +1,4 @@
-import { M2_TEXTURE_COORD } from '@wowserhq/format';
-import { MODEL_SHADER_VERTEX } from '../types.js';
+import { M2_TEXTURE_COORD, M2_VERTEX_SHADER } from '@wowserhq/format';
 import {
   FUNCTION_CALCULATE_FOG_FACTOR,
   UNIFORM_FOG_PARAMS,
@@ -25,7 +24,19 @@ const VERTEX_SHADER_INPUTS = [
 
 const VERTEX_SHADER_OUTPUTS = [{ name: 'vLight', type: 'float' }];
 
-const VERTEX_SHADER_FUNCTIONS = [];
+const VERTEX_SHADER_SPHERE_MAP = `
+vec2 sphereMap(vec3 position, vec3 normal) {
+  vec3 viewPosition = normalize(vec3(modelViewMatrix * vec4(position, 1.0)));
+  vec3 viewNormal = normalize(normalMatrix * normal);
+
+  vec3 temp = (-viewPosition - (viewNormal * (2.0 * dot(-viewPosition, viewNormal))));
+  temp = vec3(temp.x, temp.y, temp.z + 1.0);
+
+  return (normalize(temp).xy * 0.5) + vec2(0.5);
+}
+`;
+
+const VERTEX_SHADER_FUNCTIONS = [VERTEX_SHADER_SPHERE_MAP];
 
 const VERTEX_SHADER_MAIN_LIGHTING = `
 vec3 viewNormal = normalize(normalMatrix * normal);
@@ -91,8 +102,7 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   } else if (texCoord1 === M2_TEXTURE_COORD.COORD_T2) {
     main.push(`vTexCoord1 = texCoord2;`);
   } else if (texCoord1 === M2_TEXTURE_COORD.COORD_ENV) {
-    // TODO
-    main.push(`vTexCoord1 = vec2(0.0, 0.0);`);
+    main.push(`vTexCoord1 = sphereMap(position, normal);`);
   }
 
   if (texCoord2 === M2_TEXTURE_COORD.COORD_T1) {
@@ -100,8 +110,7 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   } else if (texCoord2 === M2_TEXTURE_COORD.COORD_T2) {
     main.push(`vTexCoord2 = texCoord2;`);
   } else if (texCoord2 === M2_TEXTURE_COORD.COORD_ENV) {
-    // TODO
-    main.push(`vTexCoord2 = vec2(0.0, 0.0);`);
+    main.push(`vTexCoord2 = sphereMap(position, normal);`);
   }
 
   main.push(VERTEX_SHADER_MAIN_LIGHTING);
@@ -111,29 +120,19 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   return composeShader(precision, uniforms, inputs, outputs, functions, main);
 };
 
+// prettier-ignore
 const VERTEX_SHADER = {
-  T1: createVertexShader(M2_TEXTURE_COORD.COORD_T1),
-  T2: createVertexShader(M2_TEXTURE_COORD.COORD_T2),
-  ENV: createVertexShader(M2_TEXTURE_COORD.COORD_ENV),
-  T1_T2: createVertexShader(M2_TEXTURE_COORD.COORD_T1, M2_TEXTURE_COORD.COORD_T2),
-  T1_ENV: createVertexShader(M2_TEXTURE_COORD.COORD_T1, M2_TEXTURE_COORD.COORD_ENV),
-  ENV_T2: createVertexShader(M2_TEXTURE_COORD.COORD_ENV, M2_TEXTURE_COORD.COORD_T2),
-  ENV_ENV: createVertexShader(M2_TEXTURE_COORD.COORD_ENV, M2_TEXTURE_COORD.COORD_ENV),
-  DEFAULT: createVertexShader(),
+  [M2_VERTEX_SHADER.VERTEX_T1]: createVertexShader(M2_TEXTURE_COORD.COORD_T1),
+  [M2_VERTEX_SHADER.VERTEX_T2]: createVertexShader(M2_TEXTURE_COORD.COORD_T2),
+  [M2_VERTEX_SHADER.VERTEX_ENV]: createVertexShader(M2_TEXTURE_COORD.COORD_ENV),
+  [M2_VERTEX_SHADER.VERTEX_T1_T2]: createVertexShader(M2_TEXTURE_COORD.COORD_T1, M2_TEXTURE_COORD.COORD_T2),
+  [M2_VERTEX_SHADER.VERTEX_T1_ENV]: createVertexShader(M2_TEXTURE_COORD.COORD_T1, M2_TEXTURE_COORD.COORD_ENV),
+  [M2_VERTEX_SHADER.VERTEX_ENV_T2]: createVertexShader(M2_TEXTURE_COORD.COORD_ENV, M2_TEXTURE_COORD.COORD_T2),
+  [M2_VERTEX_SHADER.VERTEX_ENV_ENV]: createVertexShader(M2_TEXTURE_COORD.COORD_ENV, M2_TEXTURE_COORD.COORD_ENV),
+  [M2_VERTEX_SHADER.VERTEX_UNKNOWN]: createVertexShader(),
 };
 
-const getVertexShader = (shader: MODEL_SHADER_VERTEX) => {
-  if (shader === MODEL_SHADER_VERTEX.VERTEX_UNKNOWN) {
-    return VERTEX_SHADER.DEFAULT;
-  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_T1) {
-    return VERTEX_SHADER.T1;
-  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_T2) {
-    return VERTEX_SHADER.T2;
-  } else if (shader === MODEL_SHADER_VERTEX.VERTEX_ENV) {
-    return VERTEX_SHADER.ENV;
-  }
-
-  return VERTEX_SHADER.DEFAULT;
-};
+const getVertexShader = (shader: M2_VERTEX_SHADER) =>
+  VERTEX_SHADER[shader] ?? VERTEX_SHADER[M2_VERTEX_SHADER.VERTEX_UNKNOWN];
 
 export { getVertexShader };
