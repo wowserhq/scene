@@ -82,6 +82,10 @@ void combineOpaqueMod2xNa(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb * 2.0;
 }
 
+void combineOpaqueMod2xNaAlpha(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+  color.rgb = (color.rgb * tex0.rgb) * mix(tex1.rgb * 2.0, vec3(1.0), tex0.a);
+}
+
 void combineModOpaque(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb;
   color.a = color.a * tex0.a;
@@ -199,6 +203,7 @@ const FRAGMENT_SHADER = {
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDALPHA_ALPHA]: createFragmentShader(2, 'combineOpaqueAddAlphaAlpha'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2X]: createFragmentShader(2, 'combineOpaqueMod2x'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2XNA]: createFragmentShader(2, 'combineOpaqueMod2xNa'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2XNA_ALPHA]: createFragmentShader(2, 'combineOpaqueMod2xNaAlpha'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDNA]: createFragmentShader(2, 'combineOpaqueAddNa'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD]: createFragmentShader(2, 'combineOpaqueMod'),
   [M2_FRAGMENT_SHADER.FRAGMENT_MOD_OPAQUE]: createFragmentShader(2, 'combineModOpaque'),
