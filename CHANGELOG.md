@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.25.0](https://github.com/wowserhq/scene/compare/v0.24.1...v0.25.0) (2024-01-22)
+
+
+### Features
+
+* **model:** improve shader selection logic ([#57](https://github.com/wowserhq/scene/issues/57)) ([b465b5c](https://github.com/wowserhq/scene/commit/b465b5c13c6c4e1caf4f79e8ef027674c03a0bfa))
+* **model:** overhaul material handling for models ([74e7764](https://github.com/wowserhq/scene/commit/74e7764e56895f9dce97357c06316adb08698aa9))
+
 ## [0.24.1](https://github.com/wowserhq/scene/compare/v0.24.0...v0.24.1) (2024-01-17)
 
 
