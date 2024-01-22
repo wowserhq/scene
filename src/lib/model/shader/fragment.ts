@@ -181,6 +181,7 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
   return composeShader(precision, uniforms, inputs, outputs, functions, main);
 };
 
+// prettier-ignore
 const FRAGMENT_SHADER = {
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE]: createFragmentShader(1, 'combineOpaque'),
   [M2_FRAGMENT_SHADER.FRAGMENT_MOD]: createFragmentShader(1, 'combineMod'),
@@ -191,6 +192,7 @@ const FRAGMENT_SHADER = {
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_OPAQUE]: createFragmentShader(2, 'combineOpaqueOpaque'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADD]: createFragmentShader(2, 'combineOpaqueAdd'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDALPHA]: createFragmentShader(2, 'combineOpaqueAddAlpha'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDALPHA_ALPHA]: createFragmentShader(2, 'combineOpaqueAddAlphaAlpha'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2X]: createFragmentShader(2, 'combineOpaqueMod2x'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2XNA]: createFragmentShader(2, 'combineOpaqueMod2xNa'),
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDNA]: createFragmentShader(2, 'combineOpaqueAddNa'),
