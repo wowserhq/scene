@@ -47,6 +47,10 @@ void combineMod2x(inout vec4 color, in vec4 tex0) {
   color.a = color.a * tex0.a * 2.0;
 }
 
+void combineOpaqueOpaque(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+  color.rgb = (color.rgb * tex0.rgb) * tex1.rgb;
+}
+
 void combineOpaqueAdd(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) + tex1.rgb;
   color.a = color.a + tex1.a;
