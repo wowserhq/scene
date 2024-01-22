@@ -87,6 +87,11 @@ void combineModMod(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb;
   color.a = (color.a * tex0.a) * tex1.a;
 }
+
+void combineModAdd(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+  color.rgb = (color.rgb * tex0.rgb) + tex1.rgb;
+  color.a = (color.a * tex0.a) + tex1.a;
+}
 `;
 
 const FRAGMENT_SHADER_MAIN_ALPHATEST = `
@@ -187,6 +192,7 @@ const FRAGMENT_SHADER = {
   [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD]: createFragmentShader(2, 'combineOpaqueMod'),
   [M2_FRAGMENT_SHADER.FRAGMENT_MOD_OPAQUE]: createFragmentShader(2, 'combineModOpaque'),
   [M2_FRAGMENT_SHADER.FRAGMENT_MOD_MOD]: createFragmentShader(2, 'combineModMod'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_MOD_ADD]: createFragmentShader(2, 'combineModAdd'),
   [M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN]: createFragmentShader(0, ''),
 };
 
