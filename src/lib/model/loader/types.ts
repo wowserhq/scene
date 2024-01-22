@@ -1,5 +1,9 @@
-import { M2_MATERIAL_BLEND, M2_TEXTURE_COMPONENT } from '@wowserhq/format';
-import { MODEL_SHADER_FRAGMENT, MODEL_SHADER_VERTEX } from '../types.js';
+import {
+  M2_FRAGMENT_SHADER,
+  M2_MATERIAL_BLEND,
+  M2_TEXTURE_COMPONENT,
+  M2_VERTEX_SHADER,
+} from '@wowserhq/format';
 
 type TextureSpec = {
   flags: number;
@@ -10,8 +14,8 @@ type TextureSpec = {
 type MaterialSpec = {
   flags: number;
   textures: TextureSpec[];
-  vertexShader: MODEL_SHADER_VERTEX;
-  fragmentShader: MODEL_SHADER_FRAGMENT;
+  vertexShader: M2_VERTEX_SHADER;
+  fragmentShader: M2_FRAGMENT_SHADER;
   blend: M2_MATERIAL_BLEND;
 };
 

@@ -1,4 +1,4 @@
-import { MODEL_SHADER_FRAGMENT } from '../types.js';
+import { M2_FRAGMENT_SHADER } from '@wowserhq/format';
 import { VARIABLE_FOG_FACTOR, FUNCTION_APPLY_FOG, UNIFORM_FOG_COLOR } from '../../shader/fog.js';
 import { composeShader } from '../../shader/util.js';
 
@@ -72,6 +72,10 @@ void combineOpaqueMod(inout vec4 color, in vec4 tex0, in vec4 tex1) {
 void combineOpaqueMod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
   color.rgb = (color.rgb * tex0.rgb) * tex1.rgb * 2.0;
   color.a = color.a * tex1.a * 2.0;
+}
+
+void combineOpaqueMod2xNa(inout vec4 color, in vec4 tex0, in vec4 tex1) {
+  color.rgb = (color.rgb * tex0.rgb) * tex1.rgb * 2.0;
 }
 `;
 
@@ -158,33 +162,23 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
 };
 
 const FRAGMENT_SHADER = {
-  COMBINER_OPAQUE: createFragmentShader(1, 'combineOpaque'),
-  COMBINER_MOD: createFragmentShader(1, 'combineMod'),
-  COMBINER_DECAL: createFragmentShader(1, 'combineDecal'),
-  COMBINER_ADD: createFragmentShader(1, 'combineAdd'),
-  COMBINER_MOD2X: createFragmentShader(1, 'combineMod2x'),
-  COMBINER_FADE: createFragmentShader(1, 'combineFade'),
-  DEFAULT: createFragmentShader(0, ''),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE]: createFragmentShader(1, 'combineOpaque'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_MOD]: createFragmentShader(1, 'combineMod'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_DECAL]: createFragmentShader(1, 'combineDecal'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_ADD]: createFragmentShader(1, 'combineAdd'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_MOD2X]: createFragmentShader(1, 'combineMod2x'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_FADE]: createFragmentShader(1, 'combineFade'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_OPAQUE]: createFragmentShader(2, 'combineOpaqueOpaque'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADD]: createFragmentShader(2, 'combineOpaqueAdd'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDALPHA]: createFragmentShader(2, 'combineOpaqueAddAlpha'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2X]: createFragmentShader(2, 'combineOpaqueMod2x'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD2XNA]: createFragmentShader(2, 'combineOpaqueMod2xNa'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_ADDNA]: createFragmentShader(2, 'combineOpaqueAddNa'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_OPAQUE_MOD]: createFragmentShader(2, 'combineOpaqueMod'),
+  [M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN]: createFragmentShader(0, ''),
 };
 
-const getFragmentShader = (shader: MODEL_SHADER_FRAGMENT) => {
-  if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_UNKNOWN) {
-    return FRAGMENT_SHADER.DEFAULT;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_OPAQUE) {
-    return FRAGMENT_SHADER.COMBINER_OPAQUE;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_MOD) {
-    return FRAGMENT_SHADER.COMBINER_MOD;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_DECAL) {
-    return FRAGMENT_SHADER.COMBINER_ADD;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_ADD) {
-    return FRAGMENT_SHADER.COMBINER_ADD;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_MOD2X) {
-    return FRAGMENT_SHADER.COMBINER_MOD2X;
-  } else if (shader === MODEL_SHADER_FRAGMENT.FRAGMENT_FADE) {
-    return FRAGMENT_SHADER.COMBINER_FADE;
-  }
-
-  return FRAGMENT_SHADER.DEFAULT;
-};
+const getFragmentShader = (shader: M2_FRAGMENT_SHADER) =>
+  FRAGMENT_SHADER[shader] ?? FRAGMENT_SHADER[M2_FRAGMENT_SHADER.FRAGMENT_UNKNOWN];
 
 export { getFragmentShader };
