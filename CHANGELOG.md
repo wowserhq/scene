@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.26.0](https://github.com/wowserhq/scene/compare/v0.25.0...v0.26.0) (2024-01-22)
+
+
+### Features
+
+* **model:** add mod + add combiner to fragment shader ([3218452](https://github.com/wowserhq/scene/commit/321845205644df9f67d4238c254b6f6e0a623760))
+* **model:** add mod + mod combiner to fragment shader ([714dda3](https://github.com/wowserhq/scene/commit/714dda3923b3164e9e37775e09cdb005e601e318))
+* **model:** add mod + mod2x combiner to fragment shader ([b881cf3](https://github.com/wowserhq/scene/commit/b881cf329feaa541d5e379e8070159b17087ca2d))
+* **model:** add mod + opaque combiner to fragment shader ([95f4534](https://github.com/wowserhq/scene/commit/95f453484b03c79ce7e1a4aa3d823b7e1812018b))
+* **model:** add opaque + add alpha alpha combiner to fragment shader ([244ac8c](https://github.com/wowserhq/scene/commit/244ac8c84c1c43ea046c7b50bc13566adff89202))
+* **model:** add opaque + mod2xna alpha combiner to fragment shader ([645a5ee](https://github.com/wowserhq/scene/commit/645a5ee761acecd7182277942f8cfbf2aadd32ce))
+* **model:** add opaque + opaque combiner to fragment shader ([cbe64db](https://github.com/wowserhq/scene/commit/cbe64dbc390e165d505d4dfb881e5e4c0caebff9))
+
+
+### Bug Fixes
+
+* **model:** correct handling of texture coordinate inputs in vertex shaders ([664ab41](https://github.com/wowserhq/scene/commit/664ab41132191e12104ad473778c07857e41ca7e))
+
 ## [0.25.0](https://github.com/wowserhq/scene/compare/v0.24.1...v0.25.0) (2024-01-22)
 
 
