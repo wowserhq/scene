@@ -4,6 +4,7 @@ import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
 import { MapAreaSpec } from './loader/types.js';
 import MapLight from './light/MapLight.js';
+import ModelMesh from '../model/ModelMesh.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;
@@ -15,6 +16,9 @@ class DoodadManager {
   #host: AssetHost;
   #modelManager: ModelManager;
 
+  #loadedAreas = new Map<number, THREE.Group>();
+  #loadingAreas = new Map<number, Promise<THREE.Group>>();
+
   constructor(options: DoodadManagerOptions) {
     this.#host = options.host;
 
@@ -25,7 +29,41 @@ class DoodadManager {
     });
   }
 
-  async getArea(area: MapAreaSpec) {
+  getArea(areaId: number, area: MapAreaSpec): Promise<THREE.Group> {
+    const loaded = this.#loadedAreas.get(areaId);
+    if (loaded) {
+      return Promise.resolve(loaded);
+    }
+
+    const alreadyLoading = this.#loadingAreas.get(areaId);
+    if (alreadyLoading) {
+      return alreadyLoading;
+    }
+
+    const loading = this.#loadArea(areaId, area);
+    this.#loadingAreas.set(areaId, loading);
+
+    return loading;
+  }
+
+  removeArea(areaId: number) {
+    const group = this.#loadedAreas.get(areaId);
+    if (!group) {
+      return;
+    }
+
+    for (const model of group.children) {
+      (model as ModelMesh).dispose();
+    }
+
+    this.#loadedAreas.delete(areaId);
+  }
+
+  update(deltaTime: number) {
+    this.#modelManager.update(deltaTime);
+  }
+
+  async #loadArea(areaId: number, area: MapAreaSpec) {
     const group = new THREE.Group();
     group.name = 'doodads';
 
@@ -50,11 +88,10 @@ class DoodadManager {
       group.add(model);
     }
 
-    return group;
-  }
+    this.#loadedAreas.set(areaId, group);
+    this.#loadingAreas.delete(areaId);
 
-  update(deltaTime: number) {
-    this.#modelManager.update(deltaTime);
+    return group;
   }
 }
 

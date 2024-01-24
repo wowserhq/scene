@@ -282,6 +282,7 @@ class MapManager extends EventTarget {
       if (doodadGroup) {
         this.#root.remove(doodadGroup);
         this.#doodadGroups.delete(areaId);
+        this.#doodadManager.removeArea(areaId);
       }
 
       this.#loadedAreas.delete(areaId);
@@ -313,7 +314,7 @@ class MapManager extends EventTarget {
 
       const [terrainGroup, doodadGroup] = await Promise.all([
         this.#terrainManager.getArea(areaId, newArea),
-        this.#doodadManager.getArea(newArea),
+        this.#doodadManager.getArea(areaId, newArea),
       ]);
 
       const terrainBoundingSphere = new THREE.Box3()

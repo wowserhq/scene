@@ -10,6 +10,8 @@ type ModelTextureTransform = {
 
 class ModelMesh extends THREE.Mesh {
   #animator: ModelAnimator;
+  #animationActions: Set<THREE.AnimationAction> = new Set();
+
   #diffuseColor: THREE.Color;
   #emissiveColor: THREE.Color;
   #alpha: 1.0;
@@ -51,7 +53,8 @@ class ModelMesh extends THREE.Mesh {
 
     // Automatically play all loops
     for (let i = 0; i < this.#animator.loops.length; i++) {
-      this.#animator.getLoop(this, i).play();
+      const action = this.#animator.getLoop(this, i).play();
+      this.#animationActions.add(action);
     }
 
     // Automatically play flagged sequences
@@ -59,7 +62,8 @@ class ModelMesh extends THREE.Mesh {
       const sequence = this.#animator.sequences[i];
 
       if (sequence.flags & 0x20) {
-        this.#animator.getSequence(this, i).play();
+        const action = this.#animator.getSequence(this, i).play();
+        this.#animationActions.add(action);
       }
     }
   }
@@ -83,6 +87,14 @@ class ModelMesh extends THREE.Mesh {
       const { translation, rotation, scaling } = this.textureTransforms[transformIndex];
       material.setTextureTransform(i, translation, rotation, scaling);
     }
+  }
+
+  dispose() {
+    for (const action of this.#animationActions.values()) {
+      this.#animator.clearAction(action);
+    }
+
+    this.#animationActions.clear();
   }
 }
 

@@ -36,6 +36,11 @@ class ModelAnimator {
     return this.#sequences;
   }
 
+  clearAction(action: THREE.AnimationAction) {
+    action.stop();
+    this.#mixer.uncacheAction(action.getClip());
+  }
+
   update(deltaTime: number) {
     this.#mixer.update(deltaTime);
   }
