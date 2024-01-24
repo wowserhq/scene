@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.27.0](https://github.com/wowserhq/scene/compare/v0.26.0...v0.27.0) (2024-01-24)
+
+
+### Features
+
+* **map:** dispose of model animations when removing area doodads ([bcd6b0d](https://github.com/wowserhq/scene/commit/bcd6b0d7e39be7a903658b37c5ec7d45c48e9a32))
+* **model:** add support for texture weight and transform animations ([a68e2ce](https://github.com/wowserhq/scene/commit/a68e2ce1605b8f1053113e61a4d15efd0a495a3b))
+
 ## [0.26.0](https://github.com/wowserhq/scene/compare/v0.25.0...v0.26.0) (2024-01-22)
 
 
