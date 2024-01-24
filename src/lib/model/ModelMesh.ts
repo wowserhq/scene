@@ -1,31 +1,19 @@
 import * as THREE from 'three';
 import ModelMaterial from './ModelMaterial.js';
 import ModelAnimator from './ModelAnimator.js';
-
-type ModelTextureTransform = {
-  translation: THREE.Vector3;
-  rotation: THREE.Quaternion;
-  scaling: THREE.Vector3;
-};
-
-type ModelColor = {
-  color: THREE.Color;
-  alpha: number;
-};
-
-const _color = new THREE.Color();
+import { ModelMaterialColor, ModelTextureTransform } from './types.js';
 
 class ModelMesh extends THREE.Mesh {
   #animator: ModelAnimator;
   #animationActions: Set<THREE.AnimationAction> = new Set();
 
-  #diffuseColor: THREE.Color;
-  #emissiveColor: THREE.Color;
-  #alpha: 1.0;
+  diffuseColor: THREE.Color;
+  emissiveColor: THREE.Color;
+  alpha: 1.0;
 
   textureWeights: number[] = [];
   textureTransforms: ModelTextureTransform[] = [];
-  colors: ModelColor[] = [];
+  materialColors: ModelMaterialColor[] = [];
 
   constructor(
     geometry: THREE.BufferGeometry,
@@ -33,7 +21,7 @@ class ModelMesh extends THREE.Mesh {
     animator: ModelAnimator,
     textureWeightCount: number,
     textureTransformCount: number,
-    colorCount: number,
+    materialColorCount: number,
   ) {
     super(geometry, materials);
 
@@ -41,10 +29,10 @@ class ModelMesh extends THREE.Mesh {
 
     // Defaults
 
-    this.#diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
-    this.#emissiveColor = new THREE.Color(0.0, 0.0, 0.0);
+    this.diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
+    this.emissiveColor = new THREE.Color(0.0, 0.0, 0.0);
 
-    this.#alpha = 1.0;
+    this.alpha = 1.0;
 
     for (let i = 0; i < textureWeightCount; i++) {
       this.textureWeights.push(1.0);
@@ -58,8 +46,8 @@ class ModelMesh extends THREE.Mesh {
       });
     }
 
-    for (let i = 0; i < colorCount; i++) {
-      this.colors.push({
+    for (let i = 0; i < materialColorCount; i++) {
+      this.materialColors.push({
         color: new THREE.Color(1.0, 1.0, 1.0),
         alpha: 1.0,
       });
@@ -92,25 +80,7 @@ class ModelMesh extends THREE.Mesh {
     material: ModelMaterial,
     group: THREE.Group,
   ) {
-    const color = this.colors[material.colorIndex];
-
-    const textureWeight = this.textureWeights[material.textureWeightIndex] ?? 1.0;
-    const colorAlpha = color?.alpha ?? 1.0;
-    material.alpha = this.#alpha * textureWeight * colorAlpha;
-
-    const colorColor = color?.color;
-    _color.copy(this.#diffuseColor);
-    if (color) {
-      _color.multiply(colorColor);
-    }
-    material.setDiffuseColor(_color);
-    material.setEmissiveColor(this.#emissiveColor);
-
-    for (let i = 0; i < material.textureTransformIndices.length; i++) {
-      const transformIndex = material.textureTransformIndices[i];
-      const { translation, rotation, scaling } = this.textureTransforms[transformIndex];
-      material.setTextureTransform(i, translation, rotation, scaling);
-    }
+    material.prepareMaterial(this);
   }
 
   dispose() {

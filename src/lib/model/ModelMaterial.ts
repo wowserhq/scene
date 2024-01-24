@@ -5,22 +5,23 @@ import {
   M2_MATERIAL_BLEND_TO_THREE_BLEND_TRANSPARENT,
 } from './const.js';
 import { THREE_BLEND_STATE } from '../blend.js';
+import ModelMesh from './ModelMesh.js';
 
 const DEFAULT_BLEND: M2_MATERIAL_BLEND = M2_MATERIAL_BLEND.BLEND_OPAQUE;
 const DEFAULT_FLAGS: number = 0x0;
 const DEFAULT_ALPHA: number = 1.0;
+
+const _tempColor = new THREE.Color();
 
 class ModelMaterial extends THREE.RawShaderMaterial {
   #textureWeightIndex: number;
   #textureTransformIndices: number[];
   #textureTransforms: THREE.Matrix4[];
 
-  #colorIndex: number;
-
   #blend: M2_MATERIAL_BLEND;
-
   #materialParams: THREE.Vector4;
 
+  #colorIndex: number;
   #diffuseColor: THREE.Color;
   #emissiveColor: THREE.Color;
 
@@ -41,11 +42,10 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.#textureTransformIndices = textureTransformIndices;
     this.#textureTransforms = [new THREE.Matrix4(), new THREE.Matrix4()];
 
-    this.#colorIndex = colorIndex;
-
     this.#blend = blend;
-
     this.#materialParams = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+
+    this.#colorIndex = colorIndex;
 
     if (this.#blend === M2_MATERIAL_BLEND.BLEND_MOD) {
       this.#diffuseColor = new THREE.Color(0.0, 0.0, 0.0);
@@ -112,10 +112,6 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     return this.#materialParams.y;
   }
 
-  get colorIndex() {
-    return this.#colorIndex;
-  }
-
   get fogged() {
     return this.#materialParams.w;
   }
@@ -132,15 +128,37 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.#materialParams.setZ(lit);
   }
 
-  get textureWeightIndex() {
-    return this.#textureWeightIndex;
+  prepareMaterial(model: ModelMesh) {
+    // Colors and weights
+
+    const materialColor = model.materialColors[this.#colorIndex];
+    const textureWeight = model.textureWeights[this.#textureWeightIndex] ?? 1.0;
+
+    if (materialColor) {
+      _tempColor.copy(model.diffuseColor).multiply(materialColor.color);
+    } else {
+      _tempColor.copy(model.diffuseColor);
+    }
+
+    this.#setDiffuseColor(_tempColor);
+    this.#setEmissiveColor(model.emissiveColor);
+
+    if (materialColor) {
+      this.alpha = model.alpha * textureWeight * materialColor.alpha;
+    } else {
+      this.alpha = model.alpha * textureWeight;
+    }
+
+    // Texture transforms
+
+    for (let i = 0; i < this.#textureTransformIndices.length; i++) {
+      const transformIndex = this.#textureTransformIndices[i];
+      const { translation, rotation, scaling } = model.textureTransforms[transformIndex];
+      this.#setTextureTransform(i, translation, rotation, scaling);
+    }
   }
 
-  get textureTransformIndices() {
-    return this.#textureTransformIndices;
-  }
-
-  setDiffuseColor(color: THREE.Color) {
+  #setDiffuseColor(color: THREE.Color) {
     // Materials using BLEND_MOD and BLEND_MOD2X use hardcoded colors
     if (
       this.#blend === M2_MATERIAL_BLEND.BLEND_MOD ||
@@ -157,7 +175,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.uniformsNeedUpdate = true;
   }
 
-  setEmissiveColor(color: THREE.Color) {
+  #setEmissiveColor(color: THREE.Color) {
     // Materials using BLEND_MOD and BLEND_MOD2X use hardcoded colors
     if (
       this.#blend === M2_MATERIAL_BLEND.BLEND_MOD ||
@@ -174,7 +192,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.uniformsNeedUpdate = true;
   }
 
-  setTextureTransform(
+  #setTextureTransform(
     index: number,
     translation: THREE.Vector3,
     rotation: THREE.Quaternion,
