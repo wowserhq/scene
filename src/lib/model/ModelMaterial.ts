@@ -15,6 +15,8 @@ class ModelMaterial extends THREE.RawShaderMaterial {
   #textureTransformIndices: number[];
   #textureTransforms: THREE.Matrix4[];
 
+  #colorIndex: number;
+
   #blend: M2_MATERIAL_BLEND;
 
   #materialParams: THREE.Vector4;
@@ -28,6 +30,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     textures: THREE.Texture[],
     textureWeightIndex: number,
     textureTransformIndices: number[],
+    colorIndex: number,
     uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
     flags = DEFAULT_FLAGS,
@@ -37,6 +40,8 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.#textureWeightIndex = textureWeightIndex;
     this.#textureTransformIndices = textureTransformIndices;
     this.#textureTransforms = [new THREE.Matrix4(), new THREE.Matrix4()];
+
+    this.#colorIndex = colorIndex;
 
     this.#blend = blend;
 
@@ -105,6 +110,10 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
   get alphaRef() {
     return this.#materialParams.y;
+  }
+
+  get colorIndex() {
+    return this.#colorIndex;
   }
 
   get fogged() {

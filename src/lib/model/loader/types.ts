@@ -3,6 +3,7 @@ import {
   M2_MATERIAL_BLEND,
   M2_TEXTURE_COMPONENT,
   M2_VERTEX_SHADER,
+  M2Color,
   M2TextureTransform,
   M2TextureWeight,
 } from '@wowserhq/format';
@@ -18,6 +19,7 @@ type MaterialSpec = {
   textures: TextureSpec[];
   textureWeightIndex: number;
   textureTransformIndices: number[];
+  colorIndex: number;
   vertexShader: M2_VERTEX_SHADER;
   fragmentShader: M2_FRAGMENT_SHADER;
   blend: M2_MATERIAL_BLEND;
@@ -56,6 +58,7 @@ type ModelSpec = {
   loops: Uint32Array;
   textureWeights: M2TextureWeight[];
   textureTransforms: M2TextureTransform[];
+  colors: M2Color[];
 };
 
 export { ModelSpec, MaterialSpec, TextureSpec, SequenceSpec };

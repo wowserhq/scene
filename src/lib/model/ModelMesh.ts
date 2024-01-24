@@ -8,6 +8,13 @@ type ModelTextureTransform = {
   scaling: THREE.Vector3;
 };
 
+type ModelColor = {
+  color: THREE.Color;
+  alpha: number;
+};
+
+const _color = new THREE.Color();
+
 class ModelMesh extends THREE.Mesh {
   #animator: ModelAnimator;
   #animationActions: Set<THREE.AnimationAction> = new Set();
@@ -18,6 +25,7 @@ class ModelMesh extends THREE.Mesh {
 
   textureWeights: number[] = [];
   textureTransforms: ModelTextureTransform[] = [];
+  colors: ModelColor[] = [];
 
   constructor(
     geometry: THREE.BufferGeometry,
@@ -25,6 +33,7 @@ class ModelMesh extends THREE.Mesh {
     animator: ModelAnimator,
     textureWeightCount: number,
     textureTransformCount: number,
+    colorCount: number,
   ) {
     super(geometry, materials);
 
@@ -46,6 +55,13 @@ class ModelMesh extends THREE.Mesh {
         translation: new THREE.Vector3(),
         rotation: new THREE.Quaternion(),
         scaling: new THREE.Vector3(1.0, 1.0, 1.0),
+      });
+    }
+
+    for (let i = 0; i < colorCount; i++) {
+      this.colors.push({
+        color: new THREE.Color(1.0, 1.0, 1.0),
+        alpha: 1.0,
       });
     }
 
@@ -76,10 +92,18 @@ class ModelMesh extends THREE.Mesh {
     material: ModelMaterial,
     group: THREE.Group,
   ) {
-    const textureWeight = this.textureWeights[material.textureWeightIndex] ?? 1.0;
-    material.alpha = this.#alpha * textureWeight;
+    const color = this.colors[material.colorIndex];
 
-    material.setDiffuseColor(this.#diffuseColor);
+    const textureWeight = this.textureWeights[material.textureWeightIndex] ?? 1.0;
+    const colorAlpha = color?.alpha ?? 1.0;
+    material.alpha = this.#alpha * textureWeight * colorAlpha;
+
+    const colorColor = color?.color;
+    _color.copy(this.#diffuseColor);
+    if (color) {
+      _color.multiply(colorColor);
+    }
+    material.setDiffuseColor(_color);
     material.setEmissiveColor(this.#emissiveColor);
 
     for (let i = 0; i < material.textureTransformIndices.length; i++) {

@@ -18,6 +18,7 @@ type ModelResources = {
   animator: ModelAnimator;
   textureWeightCount: number;
   textureTransformCount: number;
+  colorCount: number;
 };
 
 type ModelManagerOptions = {
@@ -90,6 +91,7 @@ class ModelManager {
       animator,
       textureWeightCount: spec.textureWeights.length,
       textureTransformCount: spec.textureTransforms.length,
+      colorCount: spec.colors.length,
     };
 
     this.#loaded.set(refId, resources);
@@ -167,6 +169,7 @@ class ModelManager {
     );
     const textureWeightIndex = spec.textureWeightIndex;
     const textureTransformIndices = spec.textureTransformIndices;
+    const colorIndex = spec.colorIndex;
     const uniforms = { ...this.#sceneLight.uniforms };
 
     return new ModelMaterial(
@@ -175,6 +178,7 @@ class ModelManager {
       textures,
       textureWeightIndex,
       textureTransformIndices,
+      colorIndex,
       uniforms,
       spec.blend,
       spec.flags,
@@ -203,6 +207,7 @@ class ModelManager {
       resources.animator,
       resources.textureWeightCount,
       resources.textureTransformCount,
+      resources.colorCount,
     );
 
     mesh.name = resources.name;
@@ -244,6 +249,17 @@ class ModelManager {
         `.textureTransforms[${index}].scaling`,
         textureTransform.scalingTrack,
         THREE.VectorKeyframeTrack,
+      );
+    }
+
+    for (const [index, color] of spec.colors.entries()) {
+      animator.registerTrack(`.colors[${index}].color`, color.colorTrack, THREE.ColorKeyframeTrack);
+
+      animator.registerTrack(
+        `.colors[${index}].alpha`,
+        color.alphaTrack,
+        THREE.NumberKeyframeTrack,
+        (value: number) => value / 0x7fff,
       );
     }
 
