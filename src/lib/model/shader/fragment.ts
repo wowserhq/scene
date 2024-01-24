@@ -121,6 +121,7 @@ color.rgb = mix(color.rgb, color.rgb * sunColor, materialParams.z);
 
 const FRAGMENT_SHADER_MAIN_COLOR = `
 color.rgb = clamp((color.rgb * diffuseColor.rgb) + emissiveColor.rgb, 0.0, 1.0);
+color.a = materialParams.x;
 `;
 
 const FRAGMENT_SHADER_MAIN_FOG = `

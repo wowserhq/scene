@@ -178,6 +178,8 @@ class MapManager extends EventTarget {
   }
 
   update(deltaTime: number, camera: THREE.Camera) {
+    this.#doodadManager.update(deltaTime);
+
     this.#mapLight.update(camera);
 
     // If fog end is closer than the configured view distance, use the fog end plus extension to

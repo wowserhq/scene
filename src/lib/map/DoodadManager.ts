@@ -52,6 +52,10 @@ class DoodadManager {
 
     return group;
   }
+
+  update(deltaTime: number) {
+    this.#modelManager.update(deltaTime);
+  }
 }
 
 export default DoodadManager;

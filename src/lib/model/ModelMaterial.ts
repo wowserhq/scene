@@ -11,6 +11,10 @@ const DEFAULT_FLAGS: number = 0x0;
 const DEFAULT_ALPHA: number = 1.0;
 
 class ModelMaterial extends THREE.RawShaderMaterial {
+  #textureWeightIndex: number;
+  #textureTransformIndices: number[];
+  #textureTransforms: THREE.Matrix4[];
+
   #blend: M2_MATERIAL_BLEND;
 
   #materialParams: THREE.Vector4;
@@ -22,11 +26,17 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     vertexShader: string,
     fragmentShader: string,
     textures: THREE.Texture[],
+    textureWeightIndex: number,
+    textureTransformIndices: number[],
     uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
     flags = DEFAULT_FLAGS,
   ) {
     super();
+
+    this.#textureWeightIndex = textureWeightIndex;
+    this.#textureTransformIndices = textureTransformIndices;
+    this.#textureTransforms = [new THREE.Matrix4(), new THREE.Matrix4()];
 
     this.#blend = blend;
 
@@ -59,6 +69,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.uniforms = {
       ...uniforms,
       textures: { value: textures },
+      textureTransforms: { value: this.#textureTransforms },
       materialParams: { value: this.#materialParams },
       diffuseColor: { value: this.#diffuseColor },
       emissiveColor: { value: this.#emissiveColor },
@@ -112,6 +123,14 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.#materialParams.setZ(lit);
   }
 
+  get textureWeightIndex() {
+    return this.#textureWeightIndex;
+  }
+
+  get textureTransformIndices() {
+    return this.#textureTransformIndices;
+  }
+
   setDiffuseColor(color: THREE.Color) {
     // Materials using BLEND_MOD and BLEND_MOD2X use hardcoded colors
     if (
@@ -143,6 +162,16 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     }
 
     this.#emissiveColor.copy(color);
+    this.uniformsNeedUpdate = true;
+  }
+
+  setTextureTransform(
+    index: number,
+    translation: THREE.Vector3,
+    rotation: THREE.Quaternion,
+    scaling: THREE.Vector3,
+  ) {
+    this.#textureTransforms[index].compose(translation, rotation, scaling);
     this.uniformsNeedUpdate = true;
   }
 

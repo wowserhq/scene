@@ -9,11 +9,15 @@ import { getFragmentShader } from './shader/fragment.js';
 import ModelLoader from './loader/ModelLoader.js';
 import { MaterialSpec, ModelSpec, TextureSpec } from './loader/types.js';
 import SceneLight from '../light/SceneLight.js';
+import ModelAnimator from './ModelAnimator.js';
 
 type ModelResources = {
   name: string;
   geometry: THREE.BufferGeometry;
   materials: THREE.Material[];
+  animator: ModelAnimator;
+  textureWeightCount: number;
+  textureTransformCount: number;
 };
 
 type ModelManagerOptions = {
@@ -45,6 +49,14 @@ class ModelManager {
     return this.#createMesh(resources);
   }
 
+  update(deltaTime: number) {
+    for (const resources of this.#loaded.values()) {
+      if (resources.animator) {
+        resources.animator.update(deltaTime);
+      }
+    }
+  }
+
   #getResources(path: string) {
     const refId = normalizePath(path);
 
@@ -67,6 +79,7 @@ class ModelManager {
   async #loadResources(refId: string, path: string) {
     const spec = await this.#loader.loadSpec(path);
 
+    const animator = this.#createAnimator(spec);
     const geometry = this.#createGeometry(spec);
     const materials = await this.#createMaterials(spec);
 
@@ -74,6 +87,9 @@ class ModelManager {
       name: spec.name,
       geometry,
       materials,
+      animator,
+      textureWeightCount: spec.textureWeights.length,
+      textureTransformCount: spec.textureTransforms.length,
     };
 
     this.#loaded.set(refId, resources);
@@ -149,12 +165,16 @@ class ModelManager {
     const textures = await Promise.all(
       spec.textures.map((textureSpec) => this.#createTexture(textureSpec)),
     );
+    const textureWeightIndex = spec.textureWeightIndex;
+    const textureTransformIndices = spec.textureTransformIndices;
     const uniforms = { ...this.#sceneLight.uniforms };
 
     return new ModelMaterial(
       vertexShader,
       fragmentShader,
       textures,
+      textureWeightIndex,
+      textureTransformIndices,
       uniforms,
       spec.blend,
       spec.flags,
@@ -177,10 +197,57 @@ class ModelManager {
   }
 
   #createMesh(resources: ModelResources) {
-    const mesh = new ModelMesh(resources.geometry, resources.materials);
+    const mesh = new ModelMesh(
+      resources.geometry,
+      resources.materials,
+      resources.animator,
+      resources.textureWeightCount,
+      resources.textureTransformCount,
+    );
+
     mesh.name = resources.name;
 
     return mesh;
+  }
+
+  #createAnimator(spec: ModelSpec) {
+    if (spec.loops.length === 0 && spec.sequences.length === 0) {
+      return null;
+    }
+
+    const root = new THREE.Object3D();
+    const animator = new ModelAnimator(root, spec.loops, spec.sequences);
+
+    for (const [index, textureWeight] of spec.textureWeights.entries()) {
+      animator.registerTrack(
+        `.textureWeights[${index}]`,
+        textureWeight.weightTrack,
+        THREE.NumberKeyframeTrack,
+        (value: number) => value / 0x7fff,
+      );
+    }
+
+    for (const [index, textureTransform] of spec.textureTransforms.entries()) {
+      animator.registerTrack(
+        `.textureTransforms[${index}].translation`,
+        textureTransform.translationTrack,
+        THREE.VectorKeyframeTrack,
+      );
+
+      animator.registerTrack(
+        `.textureTransforms[${index}].rotation`,
+        textureTransform.rotationTrack,
+        THREE.QuaternionKeyframeTrack,
+      );
+
+      animator.registerTrack(
+        `.textureTransforms[${index}].scaling`,
+        textureTransform.scalingTrack,
+        THREE.VectorKeyframeTrack,
+      );
+    }
+
+    return animator;
   }
 }
 

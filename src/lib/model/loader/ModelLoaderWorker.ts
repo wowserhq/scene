@@ -29,11 +29,19 @@ class ModelLoaderWorker extends SceneWorker {
 
     const geometry = this.#createGeometrySpec(model, skinProfile);
     const materials = this.#createMaterialSpecs(skinProfile);
+    const sequences = this.#createSequenceSpecs(model);
+    const loops = model.loops;
+    const textureWeights = model.textureWeights;
+    const textureTransforms = model.textureTransforms;
 
     const spec: ModelSpec = {
       name: model.name,
       geometry,
       materials,
+      loops,
+      sequences,
+      textureWeights,
+      textureTransforms,
     };
 
     const transfer = [spec.geometry.vertexBuffer, spec.geometry.indexBuffer];
@@ -96,9 +104,25 @@ class ModelLoaderWorker extends SceneWorker {
       flags: batch.material.flags,
       blend: batch.material.blend,
       textures,
+      textureWeightIndex: batch.textureWeightIndex,
+      textureTransformIndices: batch.textureTransformIndices,
       vertexShader: batch.vertexShader,
       fragmentShader: batch.fragmentShader,
     };
+  }
+
+  #createSequenceSpecs(model: M2Model) {
+    return model.sequences.map((sequence) => ({
+      id: sequence.id,
+      variationIndex: sequence.variationIndex,
+      duration: sequence.duration,
+      moveSpeed: sequence.moveSpeed,
+      flags: sequence.flags,
+      frequency: sequence.frequency,
+      blendTime: sequence.blendTime,
+      variationNext: sequence.variationNext,
+      aliasNext: sequence.aliasNext,
+    }));
   }
 }
 
