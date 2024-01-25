@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { M2_TEXTURE_COMPONENT, M2_TEXTURE_FLAG } from '@wowserhq/format';
 import TextureManager from '../texture/TextureManager.js';
 import { AssetHost, normalizePath } from '../asset.js';
-import ModelMesh from './ModelMesh.js';
+import Model from './Model.js';
 import ModelMaterial from './ModelMaterial.js';
 import { getVertexShader } from './shader/vertex.js';
 import { getFragmentShader } from './shader/fragment.js';
@@ -47,7 +47,7 @@ class ModelManager {
 
   async get(path: string) {
     const resources = await this.#getResources(path);
-    return this.#createMesh(resources);
+    return this.#createModel(resources);
   }
 
   update(deltaTime: number) {
@@ -200,8 +200,8 @@ class ModelManager {
     return new THREE.Texture();
   }
 
-  #createMesh(resources: ModelResources) {
-    const mesh = new ModelMesh(
+  #createModel(resources: ModelResources) {
+    const model = new Model(
       resources.geometry,
       resources.materials,
       resources.animator,
@@ -210,9 +210,9 @@ class ModelManager {
       resources.materialColorCount,
     );
 
-    mesh.name = resources.name;
+    model.name = resources.name;
 
-    return mesh;
+    return model;
   }
 
   #createAnimator(spec: ModelSpec) {

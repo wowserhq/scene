@@ -5,7 +5,7 @@ import {
   M2_MATERIAL_BLEND_TO_THREE_BLEND_TRANSPARENT,
 } from './const.js';
 import { THREE_BLEND_STATE } from '../blend.js';
-import ModelMesh from './ModelMesh.js';
+import Model from './Model.js';
 
 const DEFAULT_BLEND: M2_MATERIAL_BLEND = M2_MATERIAL_BLEND.BLEND_OPAQUE;
 const DEFAULT_FLAGS: number = 0x0;
@@ -128,7 +128,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.#materialParams.setZ(lit);
   }
 
-  prepareMaterial(model: ModelMesh) {
+  prepareMaterial(model: Model) {
     // Colors and weights
 
     const materialColor = model.materialColors[this.#colorIndex];

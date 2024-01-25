@@ -3,7 +3,9 @@ import ModelMaterial from './ModelMaterial.js';
 import ModelAnimator from './ModelAnimator.js';
 import { ModelMaterialColor, ModelTextureTransform } from './types.js';
 
-class ModelMesh extends THREE.Mesh {
+class Model extends THREE.Object3D {
+  #mesh: THREE.Mesh;
+
   #animator: ModelAnimator;
   #animationActions: Set<THREE.AnimationAction> = new Set();
 
@@ -23,7 +25,11 @@ class ModelMesh extends THREE.Mesh {
     textureTransformCount: number,
     materialColorCount: number,
   ) {
-    super(geometry, materials);
+    super();
+
+    this.#mesh = new THREE.Mesh(geometry, materials);
+    this.#mesh.onBeforeRender = this.#onBeforeRender.bind(this);
+    this.add(this.#mesh);
 
     this.#animator = animator;
 
@@ -72,7 +78,7 @@ class ModelMesh extends THREE.Mesh {
     }
   }
 
-  onBeforeRender(
+  #onBeforeRender(
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     camera: THREE.Camera,
@@ -92,5 +98,5 @@ class ModelMesh extends THREE.Mesh {
   }
 }
 
-export default ModelMesh;
-export { ModelMesh };
+export default Model;
+export { Model };

@@ -4,7 +4,7 @@ import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
 import { MapAreaSpec } from './loader/types.js';
 import MapLight from './light/MapLight.js';
-import ModelMesh from '../model/ModelMesh.js';
+import Model from '../model/Model.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;
@@ -53,7 +53,7 @@ class DoodadManager {
     }
 
     for (const model of group.children) {
-      (model as ModelMesh).dispose();
+      (model as Model).dispose();
     }
 
     this.#loadedAreas.delete(areaId);
