@@ -33,7 +33,7 @@ class ModelLoaderWorker extends SceneWorker {
     const loops = model.loops;
     const textureWeights = model.textureWeights;
     const textureTransforms = model.textureTransforms;
-    const colors = model.colors;
+    const materialColors = model.colors;
 
     const spec: ModelSpec = {
       name: model.name,
@@ -43,7 +43,7 @@ class ModelLoaderWorker extends SceneWorker {
       sequences,
       textureWeights,
       textureTransforms,
-      colors,
+      materialColors,
     };
 
     const transfer = [spec.geometry.vertexBuffer, spec.geometry.indexBuffer];
@@ -108,7 +108,7 @@ class ModelLoaderWorker extends SceneWorker {
       textures,
       textureWeightIndex: batch.textureWeightIndex,
       textureTransformIndices: batch.textureTransformIndices,
-      colorIndex: batch.colorIndex,
+      materialColorIndex: batch.colorIndex,
       vertexShader: batch.vertexShader,
       fragmentShader: batch.fragmentShader,
     };

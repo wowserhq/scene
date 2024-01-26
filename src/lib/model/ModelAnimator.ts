@@ -1,10 +1,18 @@
 import * as THREE from 'three';
 import { M2Track } from '@wowserhq/format';
 import { SequenceSpec } from './loader/types.js';
+import ModelAnimation from './ModelAnimation.js';
+import Model from './Model.js';
 
 interface Constructor<T> {
   new (...args: any[]): T;
 }
+
+type TrackIdentity = {
+  state: string;
+  index?: number;
+  property?: string;
+};
 
 class ModelAnimator {
   #mixer: THREE.AnimationMixer;
@@ -15,8 +23,10 @@ class ModelAnimator {
   #sequences: SequenceSpec[] = [];
   #sequenceClips: THREE.AnimationClip[] = [];
 
-  constructor(root: THREE.Object3D, loops: Uint32Array, sequences: SequenceSpec[]) {
-    this.#mixer = new THREE.AnimationMixer(root);
+  #stateCounts: Record<string, number> = {};
+
+  constructor(loops: Uint32Array, sequences: SequenceSpec[]) {
+    this.#mixer = new THREE.AnimationMixer(new THREE.Object3D());
     this.#mixer.timeScale = 1000;
 
     for (const loop of loops) {
@@ -26,6 +36,10 @@ class ModelAnimator {
     for (const sequence of sequences) {
       this.#registerSequence(sequence);
     }
+  }
+
+  createAnimation(model: Model) {
+    return new ModelAnimation(model, this, this.#stateCounts);
   }
 
   get loops() {
@@ -56,7 +70,7 @@ class ModelAnimator {
   }
 
   registerTrack<T extends THREE.TypedArray>(
-    name: string,
+    identity: TrackIdentity,
     track: M2Track<T>,
     TrackType: Constructor<THREE.KeyframeTrack>,
     transform?: (value: any) => any,
@@ -64,6 +78,27 @@ class ModelAnimator {
     // Empty track
     if (track.sequenceTimes.length === 0 || track.sequenceKeys.length === 0) {
       return;
+    }
+
+    // Name
+    let name: string;
+    if (identity.index === undefined && identity.property === undefined) {
+      name = `.${identity.state}`;
+    } else if (identity.index !== undefined && identity.property === undefined) {
+      name = `.${identity.state}[${identity.index}]`;
+    } else if (identity.index !== undefined && identity.property !== undefined) {
+      name = `.${identity.state}[${identity.index}].${identity.property}`;
+    } else {
+      throw new Error(`Unsupported track identity: ${identity.state}`);
+    }
+
+    // State counts
+    if (identity.index !== undefined) {
+      const currentCount = this.#stateCounts[identity.state] ?? 0;
+      const newCount = identity.index + 1;
+      if (newCount > currentCount) {
+        this.#stateCounts[identity.state] = newCount;
+      }
     }
 
     if (track.loopIndex === 0xffff) {

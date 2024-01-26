@@ -19,7 +19,7 @@ type MaterialSpec = {
   textures: TextureSpec[];
   textureWeightIndex: number;
   textureTransformIndices: number[];
-  colorIndex: number;
+  materialColorIndex: number;
   vertexShader: M2_VERTEX_SHADER;
   fragmentShader: M2_FRAGMENT_SHADER;
   blend: M2_MATERIAL_BLEND;
@@ -58,7 +58,7 @@ type ModelSpec = {
   loops: Uint32Array;
   textureWeights: M2TextureWeight[];
   textureTransforms: M2TextureTransform[];
-  colors: M2Color[];
+  materialColors: M2Color[];
 };
 
 export { ModelSpec, MaterialSpec, TextureSpec, SequenceSpec };

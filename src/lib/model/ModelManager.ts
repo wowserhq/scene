@@ -16,9 +16,6 @@ type ModelResources = {
   geometry: THREE.BufferGeometry;
   materials: THREE.Material[];
   animator: ModelAnimator;
-  textureWeightCount: number;
-  textureTransformCount: number;
-  materialColorCount: number;
 };
 
 type ModelManagerOptions = {
@@ -89,9 +86,6 @@ class ModelManager {
       geometry,
       materials,
       animator,
-      textureWeightCount: spec.textureWeights.length,
-      textureTransformCount: spec.textureTransforms.length,
-      materialColorCount: spec.colors.length,
     };
 
     this.#loaded.set(refId, resources);
@@ -169,7 +163,7 @@ class ModelManager {
     );
     const textureWeightIndex = spec.textureWeightIndex;
     const textureTransformIndices = spec.textureTransformIndices;
-    const colorIndex = spec.colorIndex;
+    const materialColorIndex = spec.materialColorIndex;
     const uniforms = { ...this.#sceneLight.uniforms };
 
     return new ModelMaterial(
@@ -178,7 +172,7 @@ class ModelManager {
       textures,
       textureWeightIndex,
       textureTransformIndices,
-      colorIndex,
+      materialColorIndex,
       uniforms,
       spec.blend,
       spec.flags,
@@ -201,14 +195,7 @@ class ModelManager {
   }
 
   #createModel(resources: ModelResources) {
-    const model = new Model(
-      resources.geometry,
-      resources.materials,
-      resources.animator,
-      resources.textureWeightCount,
-      resources.textureTransformCount,
-      resources.materialColorCount,
-    );
+    const model = new Model(resources.geometry, resources.materials, resources.animator);
 
     model.name = resources.name;
 
@@ -220,12 +207,11 @@ class ModelManager {
       return null;
     }
 
-    const root = new THREE.Object3D();
-    const animator = new ModelAnimator(root, spec.loops, spec.sequences);
+    const animator = new ModelAnimator(spec.loops, spec.sequences);
 
     for (const [index, textureWeight] of spec.textureWeights.entries()) {
       animator.registerTrack(
-        `.textureWeights[${index}]`,
+        { state: 'textureWeights', index },
         textureWeight.weightTrack,
         THREE.NumberKeyframeTrack,
         (value: number) => value / 0x7fff,
@@ -234,34 +220,34 @@ class ModelManager {
 
     for (const [index, textureTransform] of spec.textureTransforms.entries()) {
       animator.registerTrack(
-        `.textureTransforms[${index}].translation`,
+        { state: 'textureTransforms', index, property: 'translation' },
         textureTransform.translationTrack,
         THREE.VectorKeyframeTrack,
       );
 
       animator.registerTrack(
-        `.textureTransforms[${index}].rotation`,
+        { state: 'textureTransforms', index, property: 'rotation ' },
         textureTransform.rotationTrack,
         THREE.QuaternionKeyframeTrack,
       );
 
       animator.registerTrack(
-        `.textureTransforms[${index}].scaling`,
+        { state: 'textureTransforms', index, property: 'scaling' },
         textureTransform.scalingTrack,
         THREE.VectorKeyframeTrack,
       );
     }
 
-    for (const [index, color] of spec.colors.entries()) {
+    for (const [index, materialColor] of spec.materialColors.entries()) {
       animator.registerTrack(
-        `.materialColors[${index}].color`,
-        color.colorTrack,
+        { state: 'materialColors', index, property: 'color' },
+        materialColor.colorTrack,
         THREE.ColorKeyframeTrack,
       );
 
       animator.registerTrack(
-        `.materialColors[${index}].alpha`,
-        color.alphaTrack,
+        { state: 'materialColors', index, property: 'alpha' },
+        materialColor.alphaTrack,
         THREE.NumberKeyframeTrack,
         (value: number) => value / 0x7fff,
       );

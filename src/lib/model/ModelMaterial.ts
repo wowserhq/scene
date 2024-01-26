@@ -129,10 +129,12 @@ class ModelMaterial extends THREE.RawShaderMaterial {
   }
 
   prepareMaterial(model: Model) {
+    const { animation } = model;
+
     // Colors and weights
 
-    const materialColor = model.materialColors[this.#colorIndex];
-    const textureWeight = model.textureWeights[this.#textureWeightIndex] ?? 1.0;
+    const materialColor = animation.materialColors[this.#colorIndex];
+    const textureWeight = animation.textureWeights[this.#textureWeightIndex] ?? 1.0;
 
     if (materialColor) {
       _tempColor.copy(model.diffuseColor).multiply(materialColor.color);
@@ -153,7 +155,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
     for (let i = 0; i < this.#textureTransformIndices.length; i++) {
       const transformIndex = this.#textureTransformIndices[i];
-      const { translation, rotation, scaling } = model.textureTransforms[transformIndex];
+      const { translation, rotation, scaling } = animation.textureTransforms[transformIndex];
       this.#setTextureTransform(i, translation, rotation, scaling);
     }
   }
