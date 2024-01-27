@@ -66,10 +66,12 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.fogged = flags & M2_MATERIAL_FLAG.FLAG_DISABLE_FOG ? 0.0 : 1.0;
     this.alpha = DEFAULT_ALPHA;
 
+    if (this.side === THREE.DoubleSide) {
+      this.defines['DOUBLE_SIDED'] = 1;
+    }
+
     if (skinned) {
-      this.defines = {
-        USE_SKINNING: 1,
-      };
+      this.defines['USE_SKINNING'] = 1;
     }
 
     this.glslVersion = THREE.GLSL3;

@@ -17,7 +17,6 @@ const VERTEX_SHADER_UNIFORMS = [
   { name: 'normalMatrix', type: 'mat3' },
   { name: 'projectionMatrix', type: 'mat4' },
   { name: 'cameraPosition', type: 'vec3' },
-  { name: 'sunDir', type: 'vec3' },
   { name: 'textureTransforms[2]', type: 'mat4' },
 ];
 
@@ -28,7 +27,7 @@ const VERTEX_SHADER_INPUTS = [
   { name: 'skinWeight', type: 'vec4', if: 'USE_SKINNING' },
 ];
 
-const VERTEX_SHADER_OUTPUTS = [{ name: 'vLight', type: 'float' }];
+const VERTEX_SHADER_OUTPUTS = [{ name: 'vViewNormal', type: 'vec3' }];
 
 const VERTEX_SHADER_SPHERE_MAP = `
 vec2 sphereMap(vec3 position, vec3 normal) {
@@ -71,7 +70,7 @@ const VERTEX_SHADER_MAIN_SKINNING = `
 #endif
 `;
 
-const VERTEX_SHADER_MAIN_LIGHTING = `
+const VERTEX_SHADER_MAIN_NORMAL = `
 vec3 objectNormal = normal;
 
 #ifdef USE_SKINNING
@@ -85,8 +84,7 @@ vec3 objectNormal = normal;
   objectNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
 #endif
 
-vec3 viewNormal = normalize(normalMatrix * objectNormal);
-vLight = clamp(dot(viewNormal, -sunDir), 0.0, 1.0);
+vViewNormal = normalize(normalMatrix * objectNormal);
 `;
 
 const VERTEX_SHADER_MAIN_FOG = `
@@ -177,7 +175,7 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
 
   main.push(VERTEX_SHADER_MAIN_SKINNING);
 
-  main.push(VERTEX_SHADER_MAIN_LIGHTING);
+  main.push(VERTEX_SHADER_MAIN_NORMAL);
 
   main.push(VERTEX_SHADER_MAIN_FOG);
 

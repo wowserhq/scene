@@ -7,13 +7,14 @@ const FRAGMENT_SHADER_PRECISION = 'highp float';
 const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'textures[2]', type: 'sampler2D' },
   { name: 'materialParams', type: 'vec4' },
+  { name: 'sunDir', type: 'vec3' },
   { name: 'sunDiffuseColor', type: 'vec3' },
   { name: 'sunAmbientColor', type: 'vec3' },
   { name: 'diffuseColor', type: 'vec3' },
   { name: 'emissiveColor', type: 'vec3' },
 ];
 
-const FRAGMENT_SHADER_INPUTS = [{ name: 'vLight', type: 'float' }];
+const FRAGMENT_SHADER_INPUTS = [{ name: 'vViewNormal', type: 'vec3' }];
 
 const FRAGMENT_SHADER_OUTPUTS = [{ name: 'color', type: 'vec4' }];
 
@@ -115,7 +116,16 @@ if (color.a < materialParams.y) {
 `;
 
 const FRAGMENT_SHADER_MAIN_LIGHTING = `
-vec3 sunColor = clamp((sunDiffuseColor * vLight) + sunAmbientColor, 0.0, 1.0);
+vec3 viewNormal = vViewNormal;
+
+#ifdef DOUBLE_SIDED
+  float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;
+  viewNormal *= faceDirection;
+#endif
+
+float lightFactor = clamp(dot(viewNormal, -sunDir), 0.0, 1.0);
+
+vec3 sunColor = clamp((sunDiffuseColor * lightFactor) + sunAmbientColor, 0.0, 1.0);
 color.rgb = mix(color.rgb, color.rgb * sunColor, materialParams.z);
 `;
 
