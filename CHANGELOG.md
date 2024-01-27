@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.28.0](https://github.com/wowserhq/scene/compare/v0.27.0...v0.28.0) (2024-01-27)
+
+
+### Features
+
+* **model:** add skinning and bone animations ([626073c](https://github.com/wowserhq/scene/commit/626073cc3924f132118eb87d3861b83ed72d1706))
+* **model:** add support for color animations ([3e4e4c1](https://github.com/wowserhq/scene/commit/3e4e4c18e870a5c7b2eafe38fa4855f78e60f870))
+
 ## [0.27.0](https://github.com/wowserhq/scene/compare/v0.26.0...v0.27.0) (2024-01-24)
 
 
