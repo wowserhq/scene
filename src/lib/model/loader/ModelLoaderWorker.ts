@@ -29,6 +29,7 @@ class ModelLoaderWorker extends SceneWorker {
 
     const geometry = this.#createGeometrySpec(model, skinProfile);
     const materials = this.#createMaterialSpecs(skinProfile);
+    const { bones, skinned } = this.#createBoneSpecs(model);
     const sequences = this.#createSequenceSpecs(model);
     const loops = model.loops;
     const textureWeights = model.textureWeights;
@@ -39,6 +40,8 @@ class ModelLoaderWorker extends SceneWorker {
       name: model.name,
       geometry,
       materials,
+      bones,
+      skinned,
       loops,
       sequences,
       textureWeights,
@@ -126,6 +129,60 @@ class ModelLoaderWorker extends SceneWorker {
       variationNext: sequence.variationNext,
       aliasNext: sequence.aliasNext,
     }));
+  }
+
+  #createBoneSpecs(model: M2Model) {
+    const boneSpecs = [];
+    let skinned = false;
+
+    for (const bone of model.bones) {
+      let position = bone.pivot;
+
+      // Convert pivot to absolute position
+      let parentBone = boneSpecs[bone.parentIndex];
+      while (parentBone) {
+        position[0] -= parentBone.position[0];
+        position[1] -= parentBone.position[1];
+        position[2] -= parentBone.position[2];
+
+        parentBone = boneSpecs[parentBone.parentIndex];
+      }
+
+      // Convert translation track to position track
+      const positionTrack = bone.translationTrack;
+      for (let s = 0; s < positionTrack.sequenceKeys.length; s++) {
+        const values = positionTrack.sequenceKeys[s];
+        for (let i = 0; i < values.length / 3; i++) {
+          values[i * 3] += position[0];
+          values[i * 3 + 1] += position[1];
+          values[i * 3 + 2] += position[2];
+        }
+      }
+
+      // If bone animations are present, the model needs skinning
+      const hasTranslationAnim = bone.translationTrack.sequenceTimes.length > 0;
+      const hasRotationAnim = bone.rotationTrack.sequenceTimes.length > 0;
+      const hasScaleAnim = bone.scaleTrack.sequenceTimes.length > 0;
+      if (hasTranslationAnim || hasRotationAnim || hasScaleAnim) {
+        skinned = true;
+      }
+
+      // If bone is billboarded, the model needs skinning
+      if (bone.flags & (0x8 | 0x10 | 0x20 | 0x40)) {
+        skinned = true;
+      }
+
+      boneSpecs.push({
+        position,
+        parentIndex: bone.parentIndex,
+        flags: bone.flags,
+        positionTrack: positionTrack,
+        rotationTrack: bone.rotationTrack,
+        scaleTrack: bone.scaleTrack,
+      });
+    }
+
+    return { bones: boneSpecs, skinned };
   }
 }
 

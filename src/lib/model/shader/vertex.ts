@@ -9,6 +9,9 @@ import { composeShader } from '../../shader/util.js';
 const VERTEX_SHADER_PRECISION = 'highp float';
 
 const VERTEX_SHADER_UNIFORMS = [
+  { name: 'bindMatrix', type: 'mat4', if: 'USE_SKINNING' },
+  { name: 'bindMatrixInverse', type: 'mat4', if: 'USE_SKINNING' },
+  { name: 'boneTexture', type: 'highp sampler2D', if: 'USE_SKINNING' },
   { name: 'modelMatrix', type: 'mat4' },
   { name: 'modelViewMatrix', type: 'mat4' },
   { name: 'normalMatrix', type: 'mat3' },
@@ -21,6 +24,8 @@ const VERTEX_SHADER_UNIFORMS = [
 const VERTEX_SHADER_INPUTS = [
   { name: 'position', type: 'vec3' },
   { name: 'normal', type: 'vec3' },
+  { name: 'skinIndex', type: 'vec4', if: 'USE_SKINNING' },
+  { name: 'skinWeight', type: 'vec4', if: 'USE_SKINNING' },
 ];
 
 const VERTEX_SHADER_OUTPUTS = [{ name: 'vLight', type: 'float' }];
@@ -37,10 +42,50 @@ vec2 sphereMap(vec3 position, vec3 normal) {
 }
 `;
 
-const VERTEX_SHADER_FUNCTIONS = [VERTEX_SHADER_SPHERE_MAP];
+const VERTEX_SHADER_GET_BONE_MATRIX = `
+#ifdef USE_SKINNING
+  mat4 getBoneMatrix(const in float i) {
+    int size = textureSize(boneTexture, 0).x;
+    int j = int(i) * 4;
+    int x = j % size;
+    int y = j / size;
+
+    vec4 v1 = texelFetch(boneTexture, ivec2(x, y), 0);
+    vec4 v2 = texelFetch(boneTexture, ivec2(x + 1, y), 0);
+    vec4 v3 = texelFetch(boneTexture, ivec2(x + 2, y), 0);
+    vec4 v4 = texelFetch(boneTexture, ivec2(x + 3, y), 0);
+
+    return mat4(v1, v2, v3, v4);
+  }
+#endif
+`;
+
+const VERTEX_SHADER_FUNCTIONS = [VERTEX_SHADER_SPHERE_MAP, VERTEX_SHADER_GET_BONE_MATRIX];
+
+const VERTEX_SHADER_MAIN_SKINNING = `
+#ifdef USE_SKINNING
+  mat4 boneMatX = getBoneMatrix(skinIndex.x);
+  mat4 boneMatY = getBoneMatrix(skinIndex.y);
+  mat4 boneMatZ = getBoneMatrix(skinIndex.z);
+  mat4 boneMatW = getBoneMatrix(skinIndex.w);
+#endif
+`;
 
 const VERTEX_SHADER_MAIN_LIGHTING = `
-vec3 viewNormal = normalize(normalMatrix * normal);
+vec3 objectNormal = normal;
+
+#ifdef USE_SKINNING
+  mat4 skinMatrix = mat4(0.0);
+  skinMatrix += skinWeight.x * boneMatX;
+  skinMatrix += skinWeight.y * boneMatY;
+  skinMatrix += skinWeight.z * boneMatZ;
+  skinMatrix += skinWeight.w * boneMatW;
+  skinMatrix = bindMatrixInverse * skinMatrix * bindMatrix;
+
+  objectNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
+#endif
+
+vec3 viewNormal = normalize(normalMatrix * objectNormal);
 vLight = clamp(dot(viewNormal, -sunDir), 0.0, 1.0);
 `;
 
@@ -52,7 +97,21 @@ ${VARIABLE_FOG_FACTOR.name} = calculateFogFactor(${UNIFORM_FOG_PARAMS.name}, cam
 `;
 
 const VERTEX_SHADER_MAIN_POSITION = `
-gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+#ifdef USE_SKINNING
+  vec4 skinVertex = bindMatrix * vec4(position, 1.0);
+
+  vec4 skinned = vec4(0.0);
+  skinned += boneMatX * skinVertex * skinWeight.x;
+  skinned += boneMatY * skinVertex * skinWeight.y;
+  skinned += boneMatZ * skinVertex * skinWeight.z;
+  skinned += boneMatW * skinVertex * skinWeight.w;
+
+  vec3 skinnedPosition = (bindMatrixInverse * skinned).xyz;
+
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(skinnedPosition, 1.0);
+#else
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+#endif
 `;
 
 const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE_COORD) => {
@@ -116,8 +175,12 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
     main.push(`vTexCoord2 = sphereMap(position, normal);`);
   }
 
+  main.push(VERTEX_SHADER_MAIN_SKINNING);
+
   main.push(VERTEX_SHADER_MAIN_LIGHTING);
+
   main.push(VERTEX_SHADER_MAIN_FOG);
+
   main.push(VERTEX_SHADER_MAIN_POSITION);
 
   return composeShader(precision, uniforms, inputs, outputs, functions, main);

@@ -6,6 +6,7 @@ import {
   M2Color,
   M2TextureTransform,
   M2TextureWeight,
+  M2Track,
 } from '@wowserhq/format';
 
 type TextureSpec = {
@@ -50,10 +51,21 @@ type SequenceSpec = {
   aliasNext: number;
 };
 
+type BoneSpec = {
+  position: Float32Array;
+  parentIndex: number;
+  flags: number;
+  positionTrack: M2Track<Float32Array>;
+  rotationTrack: M2Track<Float32Array>;
+  scaleTrack: M2Track<Float32Array>;
+};
+
 type ModelSpec = {
   name: string;
   geometry: GeometrySpec;
   materials: MaterialSpec[];
+  bones: BoneSpec[];
+  skinned: boolean;
   sequences: SequenceSpec[];
   loops: Uint32Array;
   textureWeights: M2TextureWeight[];
@@ -61,4 +73,4 @@ type ModelSpec = {
   materialColors: M2Color[];
 };
 
-export { ModelSpec, MaterialSpec, TextureSpec, SequenceSpec };
+export { ModelSpec, BoneSpec, MaterialSpec, TextureSpec, SequenceSpec };

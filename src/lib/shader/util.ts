@@ -1,7 +1,7 @@
 const composeShader = (
   precision: string,
-  uniforms: { name: string; type: string }[],
-  inputs: { name: string; type: string }[],
+  uniforms: { name: string; type: string; if?: string }[],
+  inputs: { name: string; type: string; if?: string }[],
   outputs: { name: string; type: string }[],
   functions: string[],
   main: string[],
@@ -11,10 +11,30 @@ const composeShader = (
   lines.push(`precision ${precision};`);
 
   lines.push('');
-  lines.push(...uniforms.map((uniform) => `uniform ${uniform.type} ${uniform.name};`));
+  for (const uniform of uniforms) {
+    if (uniform.if) {
+      lines.push(`#ifdef ${uniform.if}`);
+    }
+
+    lines.push(`uniform ${uniform.type} ${uniform.name};`);
+
+    if (uniform.if) {
+      lines.push(`#endif`);
+    }
+  }
 
   lines.push('');
-  lines.push(...inputs.map((input) => `in ${input.type} ${input.name};`));
+  for (const input of inputs) {
+    if (input.if) {
+      lines.push(`#ifdef ${input.if}`);
+    }
+
+    lines.push(`in ${input.type} ${input.name};`);
+
+    if (input.if) {
+      lines.push(`#endif`);
+    }
+  }
 
   lines.push('');
   lines.push(...outputs.map((output) => `out ${output.type} ${output.name};`));

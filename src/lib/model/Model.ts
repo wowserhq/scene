@@ -16,15 +16,28 @@ class Model extends THREE.Object3D {
     geometry: THREE.BufferGeometry,
     materials: THREE.Material[],
     animator: ModelAnimator,
+    skinned: boolean,
   ) {
     super();
 
-    this.#mesh = new THREE.Mesh(geometry, materials);
+    // Avoid skinning overhead when model does not make use of bone animations
+    if (skinned) {
+      this.#mesh = new THREE.SkinnedMesh(geometry, materials);
+    } else {
+      this.#mesh = new THREE.Mesh(geometry, materials);
+    }
+
     this.#mesh.onBeforeRender = this.#onBeforeRender.bind(this);
     this.add(this.#mesh);
 
     // Every model instance gets a unique animation state managed by a single animator
     this.animation = animator.createAnimation(this);
+
+    // Every skinned model instance gets a unique skeleton
+    if (skinned) {
+      this.#mesh.add(...this.animation.rootBones);
+      (this.#mesh as THREE.SkinnedMesh).bind(this.animation.skeleton);
+    }
 
     this.diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
     this.emissiveColor = new THREE.Color(0.0, 0.0, 0.0);
@@ -39,6 +52,12 @@ class Model extends THREE.Object3D {
     material: ModelMaterial,
     group: THREE.Group,
   ) {
+    // Ensure bone matrices are updated (matrix world auto-updates are disabled)
+    if ((this.#mesh as THREE.SkinnedMesh).isSkinnedMesh) {
+      this.#mesh.updateMatrixWorld();
+    }
+
+    // Update material uniforms to match animation states
     material.prepareMaterial(this);
   }
 

@@ -16,6 +16,7 @@ type ModelResources = {
   geometry: THREE.BufferGeometry;
   materials: THREE.Material[];
   animator: ModelAnimator;
+  skinned: boolean;
 };
 
 type ModelManagerOptions = {
@@ -86,6 +87,7 @@ class ModelManager {
       geometry,
       materials,
       animator,
+      skinned: spec.skinned,
     };
 
     this.#loaded.set(refId, resources);
@@ -105,13 +107,13 @@ class ModelManager {
 
     const boneWeights = new THREE.InterleavedBuffer(new Uint8Array(vertexBuffer), 48);
     geometry.setAttribute(
-      'boneWeights',
-      new THREE.InterleavedBufferAttribute(boneWeights, 4, 12, false),
+      'skinWeight',
+      new THREE.InterleavedBufferAttribute(boneWeights, 4, 12, true),
     );
 
     const boneIndices = new THREE.InterleavedBuffer(new Uint8Array(vertexBuffer), 48);
     geometry.setAttribute(
-      'boneIndices',
+      'skinIndex',
       new THREE.InterleavedBufferAttribute(boneIndices, 4, 16, false),
     );
 
@@ -152,10 +154,12 @@ class ModelManager {
   }
 
   #createMaterials(spec: ModelSpec) {
-    return Promise.all(spec.materials.map((materialSpec) => this.#createMaterial(materialSpec)));
+    return Promise.all(
+      spec.materials.map((materialSpec) => this.#createMaterial(materialSpec, spec.skinned)),
+    );
   }
 
-  async #createMaterial(spec: MaterialSpec) {
+  async #createMaterial(spec: MaterialSpec, skinned: boolean) {
     const vertexShader = getVertexShader(spec.vertexShader);
     const fragmentShader = getFragmentShader(spec.fragmentShader);
     const textures = await Promise.all(
@@ -173,6 +177,7 @@ class ModelManager {
       textureWeightIndex,
       textureTransformIndices,
       materialColorIndex,
+      skinned,
       uniforms,
       spec.blend,
       spec.flags,
@@ -195,7 +200,12 @@ class ModelManager {
   }
 
   #createModel(resources: ModelResources) {
-    const model = new Model(resources.geometry, resources.materials, resources.animator);
+    const model = new Model(
+      resources.geometry,
+      resources.materials,
+      resources.animator,
+      resources.skinned,
+    );
 
     model.name = resources.name;
 
@@ -207,7 +217,7 @@ class ModelManager {
       return null;
     }
 
-    const animator = new ModelAnimator(spec.loops, spec.sequences);
+    const animator = new ModelAnimator(spec.loops, spec.sequences, spec.bones);
 
     for (const [index, textureWeight] of spec.textureWeights.entries()) {
       animator.registerTrack(
@@ -250,6 +260,27 @@ class ModelManager {
         materialColor.alphaTrack,
         THREE.NumberKeyframeTrack,
         (value: number) => value / 0x7fff,
+      );
+    }
+
+    for (const [index, bone] of spec.bones.entries()) {
+      animator.registerTrack(
+        { state: 'bones', index, property: 'position' },
+        bone.positionTrack,
+        THREE.VectorKeyframeTrack,
+      );
+
+      animator.registerTrack(
+        { state: 'bones', index, property: 'quaternion' },
+        bone.rotationTrack,
+        THREE.QuaternionKeyframeTrack,
+        (value: number) => (value > 0 ? value - 0x7fff : value + 0x7fff) / 0x7fff,
+      );
+
+      animator.registerTrack(
+        { state: 'bones', index, property: 'scale' },
+        bone.scaleTrack,
+        THREE.VectorKeyframeTrack,
       );
     }
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { M2Track } from '@wowserhq/format';
-import { SequenceSpec } from './loader/types.js';
+import { BoneSpec, SequenceSpec } from './loader/types.js';
 import ModelAnimation from './ModelAnimation.js';
 import Model from './Model.js';
 
@@ -20,12 +20,15 @@ class ModelAnimator {
   #loops: number[] = [];
   #loopClips: THREE.AnimationClip[] = [];
 
-  #sequences: SequenceSpec[] = [];
-  #sequenceClips: THREE.AnimationClip[] = [];
+  #sequencesByIndex: SequenceSpec[] = [];
+  #sequences: Map<number, SequenceSpec[]> = new Map();
+  #sequenceClips: Map<number, THREE.AnimationClip[]> = new Map();
+
+  #bones: BoneSpec[] = [];
 
   #stateCounts: Record<string, number> = {};
 
-  constructor(loops: Uint32Array, sequences: SequenceSpec[]) {
+  constructor(loops: Uint32Array, sequences: SequenceSpec[], bones: BoneSpec[]) {
     this.#mixer = new THREE.AnimationMixer(new THREE.Object3D());
     this.#mixer.timeScale = 1000;
 
@@ -36,10 +39,12 @@ class ModelAnimator {
     for (const sequence of sequences) {
       this.#registerSequence(sequence);
     }
+
+    this.#bones = bones;
   }
 
   createAnimation(model: Model) {
-    return new ModelAnimation(model, this, this.#stateCounts);
+    return new ModelAnimation(model, this, this.#bones, this.#stateCounts);
   }
 
   get loops() {
@@ -64,8 +69,8 @@ class ModelAnimator {
     return this.#mixer.clipAction(clip, root);
   }
 
-  getSequence(root: THREE.Object3D, index: number) {
-    const clip = this.#sequenceClips[index];
+  getSequence(root: THREE.Object3D, id: number, variationIndex: number) {
+    const clip = this.#sequenceClips.get(id)[variationIndex];
     return this.#mixer.clipAction(clip, root);
   }
 
@@ -138,7 +143,8 @@ class ModelAnimator {
     transform?: (value: any) => any,
   ) {
     for (let s = 0; s < track.sequenceTimes.length; s++) {
-      const clip = this.#sequenceClips[s];
+      const sequence = this.#sequencesByIndex[s];
+      const clip = this.#sequenceClips.get(sequence.id)[sequence.variationIndex];
 
       const times = track.sequenceTimes[s];
       const values = transform
@@ -161,9 +167,17 @@ class ModelAnimator {
   }
 
   #registerSequence(spec: SequenceSpec) {
-    const index = this.#sequences.length;
-    this.#sequences[index] = spec;
-    this.#sequenceClips[index] = new THREE.AnimationClip(`sequence-${index}`, spec.duration, []);
+    if (!this.#sequences.has(spec.id)) {
+      this.#sequences.set(spec.id, []);
+      this.#sequenceClips.set(spec.id, []);
+    }
+
+    this.#sequences.get(spec.id)[spec.variationIndex] = spec;
+    this.#sequencesByIndex.push(spec);
+
+    const clipName = `sequence-${spec.id}-${spec.variationIndex}`;
+    const clip = new THREE.AnimationClip(clipName, spec.duration, []);
+    this.#sequenceClips.get(spec.id)[spec.variationIndex] = clip;
   }
 }
 

@@ -32,6 +32,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     textureWeightIndex: number,
     textureTransformIndices: number[],
     colorIndex: number,
+    skinned: boolean = false,
     uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
     flags = DEFAULT_FLAGS,
@@ -64,6 +65,12 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.lit = flags & M2_MATERIAL_FLAG.FLAG_DISABLE_LIGHTING ? 0.0 : 1.0;
     this.fogged = flags & M2_MATERIAL_FLAG.FLAG_DISABLE_FOG ? 0.0 : 1.0;
     this.alpha = DEFAULT_ALPHA;
+
+    if (skinned) {
+      this.defines = {
+        USE_SKINNING: 1,
+      };
+    }
 
     this.glslVersion = THREE.GLSL3;
     this.vertexShader = vertexShader;
