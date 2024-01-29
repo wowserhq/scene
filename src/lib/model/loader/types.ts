@@ -56,7 +56,7 @@ type BoneSpec = {
   parentIndex: number;
   flags: number;
   positionTrack: M2Track<Float32Array>;
-  rotationTrack: M2Track<Float32Array>;
+  rotationTrack: M2Track<Int16Array>;
   scaleTrack: M2Track<Float32Array>;
 };
 
