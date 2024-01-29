@@ -45,4 +45,4 @@ type MapAreaSpec = {
   doodadDefs: MapDoodadDefSpec[];
 };
 
-export { MapSpec, MapAreaSpec, TerrainSpec };
+export { MapSpec, MapAreaSpec, MapDoodadDefSpec, TerrainSpec };

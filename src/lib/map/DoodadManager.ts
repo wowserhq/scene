@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import ModelManager from '../model/ModelManager.js';
 import TextureManager from '../texture/TextureManager.js';
 import { AssetHost } from '../asset.js';
-import { MapAreaSpec } from './loader/types.js';
+import { MapAreaSpec, MapDoodadDefSpec } from './loader/types.js';
 import MapLight from './light/MapLight.js';
 import Model from '../model/Model.js';
 
@@ -18,6 +18,10 @@ class DoodadManager {
 
   #loadedAreas = new Map<number, THREE.Group>();
   #loadingAreas = new Map<number, Promise<THREE.Group>>();
+
+  #doodads = new Map<number, Model>();
+  #doodadDefs = new Map<number, MapDoodadDefSpec[]>();
+  #doodadRefs = new Map<number, number>();
 
   constructor(options: DoodadManagerOptions) {
     this.#host = options.host;
@@ -47,27 +51,68 @@ class DoodadManager {
   }
 
   removeArea(areaId: number) {
-    const group = this.#loadedAreas.get(areaId);
-    if (!group) {
-      return;
-    }
-
-    for (const model of group.children) {
-      (model as Model).dispose();
-    }
-
     this.#loadedAreas.delete(areaId);
+
+    // Dereference doodads
+    for (const doodadDef of this.#doodadDefs.get(areaId)) {
+      if (this.#derefDoodad(doodadDef.id) === 0) {
+        const model = this.#doodads.get(doodadDef.id);
+        model.dispose();
+
+        this.#doodads.delete(doodadDef.id);
+      }
+    }
+
+    this.#doodadDefs.delete(areaId);
   }
 
   update(deltaTime: number) {
     this.#modelManager.update(deltaTime);
   }
 
+  #refDoodad(refId: number) {
+    let refCount = this.#doodadRefs.get(refId) || 0;
+
+    refCount++;
+
+    this.#doodadRefs.set(refId, refCount);
+
+    return refCount;
+  }
+
+  #derefDoodad(refId: number) {
+    let refCount = this.#doodadRefs.get(refId);
+
+    // Unknown ref
+
+    if (refCount === undefined) {
+      return;
+    }
+
+    // Decrement
+
+    refCount--;
+
+    if (refCount > 0) {
+      this.#doodadRefs.set(refId, refCount);
+      return refCount;
+    }
+
+    // Last reference
+
+    this.#doodadRefs.delete(refId);
+
+    return 0;
+  }
+
   async #loadArea(areaId: number, area: MapAreaSpec) {
+    this.#doodadDefs.set(areaId, area.doodadDefs);
+
+    // Only load newly referenced doodad defs (defs can be shared across multiple areas)
+    const doodadDefs = area.doodadDefs.filter((doodadDef) => this.#refDoodad(doodadDef.id) === 1);
+
     const group = new THREE.Group();
     group.name = 'doodads';
-
-    const doodadDefs = area.doodadDefs;
 
     const doodadModels = await Promise.all(
       doodadDefs.map((doodadDef) => this.#modelManager.get(doodadDef.name)),
@@ -86,6 +131,8 @@ class DoodadManager {
       model.updateMatrixWorld();
 
       group.add(model);
+
+      this.#doodads.set(def.id, model);
     }
 
     this.#loadedAreas.set(areaId, group);
