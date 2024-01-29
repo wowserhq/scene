@@ -16,8 +16,9 @@ class DoodadManager {
   #host: AssetHost;
   #modelManager: ModelManager;
 
-  #loadedAreas = new Map<number, THREE.Group>();
   #loadingAreas = new Map<number, Promise<THREE.Group>>();
+  #loadedAreas = new Map<number, THREE.Group>();
+  #areaBounds = new Map<number, THREE.Sphere>();
 
   #doodads = new Map<number, Model>();
   #doodadDefs = new Map<number, MapDoodadDefSpec[]>();
@@ -31,6 +32,15 @@ class DoodadManager {
       textureManager: options.textureManager,
       sceneLight: options.mapLight,
     });
+  }
+
+  cull(cullingFrustum: THREE.Frustum) {
+    for (const [areaId, areaGroup] of this.#loadedAreas.entries()) {
+      const areaBounds = this.#areaBounds.get(areaId);
+
+      const visible = cullingFrustum.intersectsSphere(areaBounds);
+      areaGroup.visible = visible;
+    }
   }
 
   getArea(areaId: number, area: MapAreaSpec): Promise<THREE.Group> {
@@ -51,6 +61,7 @@ class DoodadManager {
   }
 
   removeArea(areaId: number) {
+    this.#areaBounds.delete(areaId);
     this.#loadedAreas.delete(areaId);
 
     // Dereference doodads
@@ -111,8 +122,10 @@ class DoodadManager {
     // Only load newly referenced doodad defs (defs can be shared across multiple areas)
     const doodadDefs = area.doodadDefs.filter((doodadDef) => this.#refDoodad(doodadDef.id) === 1);
 
-    const group = new THREE.Group();
-    group.name = 'doodads';
+    const areaGroup = new THREE.Group();
+    areaGroup.name = 'doodads';
+
+    const areaBoundingBox = new THREE.Box3();
 
     const doodadModels = await Promise.all(
       doodadDefs.map((doodadDef) => this.#modelManager.get(doodadDef.name)),
@@ -130,15 +143,19 @@ class DoodadManager {
 
       model.updateMatrixWorld();
 
-      group.add(model);
+      areaGroup.add(model);
+      areaBoundingBox.expandByObject(model);
 
       this.#doodads.set(def.id, model);
     }
 
-    this.#loadedAreas.set(areaId, group);
+    const areaBounds = areaBoundingBox.getBoundingSphere(new THREE.Sphere());
+    this.#areaBounds.set(areaId, areaBounds);
+
+    this.#loadedAreas.set(areaId, areaGroup);
     this.#loadingAreas.delete(areaId);
 
-    return group;
+    return areaGroup;
   }
 }
 

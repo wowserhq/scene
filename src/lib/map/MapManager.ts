@@ -195,6 +195,8 @@ class MapManager extends EventTarget {
 
     // Cull entire groups to save on frustum intersection cost
     this.#cullGroups();
+
+    this.#doodadManager.cull(this.#cullingFrustum);
   }
 
   dispose() {
@@ -208,13 +210,6 @@ class MapManager extends EventTarget {
     for (const terrainGroup of this.#terrainGroups.values()) {
       terrainGroup.visible = this.#cullingFrustum.intersectsSphere(
         terrainGroup.userData.boundingSphere,
-      );
-    }
-
-    // Doodad groups
-    for (const doodadGroup of this.#doodadGroups.values()) {
-      doodadGroup.visible = this.#cullingFrustum.intersectsSphere(
-        doodadGroup.userData.boundingSphere,
       );
     }
   }
@@ -324,11 +319,6 @@ class MapManager extends EventTarget {
 
       this.#terrainGroups.set(areaId, terrainGroup);
       this.#root.add(terrainGroup);
-
-      const doodadBoundingSphere = new THREE.Box3()
-        .setFromObject(doodadGroup)
-        .getBoundingSphere(new THREE.Sphere());
-      doodadGroup.userData.boundingSphere = doodadBoundingSphere;
 
       this.#doodadGroups.set(areaId, doodadGroup);
       this.#root.add(doodadGroup);
