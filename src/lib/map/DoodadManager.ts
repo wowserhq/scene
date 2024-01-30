@@ -37,9 +37,19 @@ class DoodadManager {
   cull(cullingFrustum: THREE.Frustum) {
     for (const [areaId, areaGroup] of this.#loadedAreas.entries()) {
       const areaBounds = this.#areaBounds.get(areaId);
+      const areaVisible = cullingFrustum.intersectsSphere(areaBounds);
 
-      const visible = cullingFrustum.intersectsSphere(areaBounds);
-      areaGroup.visible = visible;
+      areaGroup.visible = areaVisible;
+
+      for (const doodad of areaGroup.children as Model[]) {
+        const doodadVisible = areaVisible && cullingFrustum.intersectsObject(doodad);
+
+        if (doodadVisible) {
+          doodad.show();
+        } else {
+          doodad.hide();
+        }
+      }
     }
   }
 
@@ -134,6 +144,9 @@ class DoodadManager {
     for (let i = 0; i < doodadDefs.length; i++) {
       const model = doodadModels[i];
       const def = doodadDefs[i];
+
+      // We handle doodad culling ourselves
+      model.frustumCulled = false;
 
       model.position.set(def.position[0], def.position[1], def.position[2]);
       model.quaternion.set(def.rotation[0], def.rotation[1], def.rotation[2], def.rotation[3]);

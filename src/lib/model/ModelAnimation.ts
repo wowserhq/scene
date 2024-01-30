@@ -17,6 +17,8 @@ class ModelAnimation extends THREE.Object3D {
   #model: Model;
   #animator: ModelAnimator;
   #actions: Set<THREE.AnimationAction> = new Set();
+  #playingActions: Set<THREE.AnimationAction> = new Set();
+  #suspendedActions: Set<THREE.AnimationAction> = new Set();
 
   constructor(
     model: Model,
@@ -40,8 +42,28 @@ class ModelAnimation extends THREE.Object3D {
     }
 
     this.#actions.clear();
+    this.#playingActions.clear();
+    this.#suspendedActions.clear();
 
     this.skeleton.dispose();
+  }
+
+  resume() {
+    for (const action of this.#suspendedActions) {
+      action.enabled = true;
+
+      this.#suspendedActions.delete(action);
+      this.#playingActions.add(action);
+    }
+  }
+
+  suspend() {
+    for (const action of this.#playingActions) {
+      action.enabled = false;
+
+      this.#playingActions.delete(action);
+      this.#suspendedActions.add(action);
+    }
   }
 
   #createStates(stateCounts: Record<string, number>) {
@@ -89,8 +111,11 @@ class ModelAnimation extends THREE.Object3D {
   #autoplay() {
     // Automatically play all loops
     for (let i = 0; i < this.#animator.loops.length; i++) {
-      const action = this.#animator.getLoop(this, i).play();
+      const action = this.#animator.getLoop(this, i);
+      action.play();
+
       this.#actions.add(action);
+      this.#playingActions.add(action);
     }
 
     // Automatically play sequence id 0
@@ -101,7 +126,9 @@ class ModelAnimation extends THREE.Object3D {
       if (sequence.flags & 0x20) {
         const action = this.#animator.getSequence(this, sequence.id, sequence.variationIndex);
         action.play();
+
         this.#actions.add(action);
+        this.#playingActions.add(action);
       }
     }
   }

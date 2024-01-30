@@ -44,6 +44,32 @@ class Model extends THREE.Object3D {
     this.alpha = 1.0;
   }
 
+  get boundingSphere() {
+    return this.#mesh.geometry.boundingSphere;
+  }
+
+  hide() {
+    if (!this.visible) {
+      return;
+    }
+
+    this.visible = false;
+    this.animation.suspend();
+  }
+
+  dispose() {
+    this.animation.dispose();
+  }
+
+  show() {
+    if (this.visible) {
+      return;
+    }
+
+    this.visible = true;
+    this.animation.resume();
+  }
+
   #onBeforeRender(
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
@@ -59,10 +85,6 @@ class Model extends THREE.Object3D {
 
     // Update material uniforms to match animation states
     material.prepareMaterial(this);
-  }
-
-  dispose() {
-    this.animation.dispose();
   }
 }
 
