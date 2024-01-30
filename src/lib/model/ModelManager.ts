@@ -217,7 +217,7 @@ class ModelManager {
       return null;
     }
 
-    const animator = new ModelAnimator(spec.loops, spec.sequences, spec.bones);
+    const animator = new ModelAnimator(spec.loops, spec.sequences, spec.skinned ? spec.bones : []);
 
     for (const [index, textureWeight] of spec.textureWeights.entries()) {
       animator.registerTrack(

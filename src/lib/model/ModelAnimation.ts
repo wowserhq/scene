@@ -45,7 +45,9 @@ class ModelAnimation extends THREE.Object3D {
     this.#playingActions.clear();
     this.#suspendedActions.clear();
 
-    this.skeleton.dispose();
+    if (this.skeleton) {
+      this.skeleton.dispose();
+    }
   }
 
   resume() {
@@ -88,6 +90,10 @@ class ModelAnimation extends THREE.Object3D {
   }
 
   #createSkeleton(boneSpecs: BoneSpec[]) {
+    if (boneSpecs.length === 0) {
+      return;
+    }
+
     const bones: THREE.Bone[] = [];
     const rootBones: THREE.Bone[] = [];
 
