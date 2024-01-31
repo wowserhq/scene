@@ -28,6 +28,8 @@ class ModelAnimator {
 
   #stateCounts: Record<string, number> = {};
 
+  #modelsByAnimation: Map<ModelAnimation, Model> = new Map();
+
   constructor(loops: Uint32Array, sequences: SequenceSpec[], bones: BoneSpec[]) {
     this.#mixer = new THREE.AnimationMixer(new THREE.Object3D());
     this.#mixer.timeScale = 1000;
@@ -44,7 +46,10 @@ class ModelAnimator {
   }
 
   createAnimation(model: Model) {
-    return new ModelAnimation(model, this, this.#bones, this.#stateCounts);
+    const animation = new ModelAnimation(model, this, this.#bones, this.#stateCounts);
+    this.#modelsByAnimation.set(animation, model);
+
+    return animation;
   }
 
   get loops() {
@@ -60,8 +65,23 @@ class ModelAnimator {
     this.#mixer.uncacheAction(action.getClip());
   }
 
+  clearAnimation(animation: ModelAnimation) {
+    this.#modelsByAnimation.delete(animation);
+  }
+
   update(deltaTime: number) {
     this.#mixer.update(deltaTime);
+
+    for (const model of this.#modelsByAnimation.values()) {
+      if (!model.visible) {
+        continue;
+      }
+
+      // Ensure bone matrices are updated (matrix world auto-updates are disabled)
+      if (model.skinned) {
+        model.updateMatrixWorld();
+      }
+    }
   }
 
   getLoop(root: THREE.Object3D, index: number) {

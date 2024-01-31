@@ -11,6 +11,7 @@ class Model extends THREE.Object3D {
   alpha: 1.0;
 
   #mesh: THREE.Mesh;
+  #skinned: boolean;
 
   constructor(
     geometry: THREE.BufferGeometry,
@@ -19,6 +20,8 @@ class Model extends THREE.Object3D {
     skinned: boolean,
   ) {
     super();
+
+    this.#skinned = skinned;
 
     // Avoid skinning overhead when model does not make use of bone animations
     if (skinned) {
@@ -53,6 +56,10 @@ class Model extends THREE.Object3D {
     return this.#mesh.geometry.boundingSphere;
   }
 
+  get skinned() {
+    return this.#skinned;
+  }
+
   hide() {
     if (!this.visible) {
       return;
@@ -83,11 +90,6 @@ class Model extends THREE.Object3D {
     material: ModelMaterial,
     group: THREE.Group,
   ) {
-    // Ensure bone matrices are updated (matrix world auto-updates are disabled)
-    if ((this.#mesh as THREE.SkinnedMesh).isSkinnedMesh) {
-      this.#mesh.updateMatrixWorld();
-    }
-
     // Update material uniforms to match animation states
     material.prepareMaterial(this);
   }

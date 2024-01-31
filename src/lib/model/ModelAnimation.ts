@@ -41,6 +41,8 @@ class ModelAnimation extends THREE.Object3D {
       this.#animator.clearAction(action);
     }
 
+    this.#animator.clearAnimation(this);
+
     this.#actions.clear();
     this.#playingActions.clear();
     this.#suspendedActions.clear();
