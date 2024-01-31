@@ -3,6 +3,7 @@ import { M2Track } from '@wowserhq/format';
 import { BoneSpec, SequenceSpec } from './loader/types.js';
 import ModelAnimation from './ModelAnimation.js';
 import Model from './Model.js';
+import { getTrackInterpolation } from './util.js';
 
 interface Constructor<T> {
   new (...args: any[]): T;
@@ -152,7 +153,7 @@ class ModelAnimator {
         continue;
       }
 
-      clip.tracks.push(new TrackType(name, times, values));
+      clip.tracks.push(new TrackType(name, times, values, getTrackInterpolation(track.trackType)));
     }
   }
 
@@ -176,7 +177,7 @@ class ModelAnimator {
         continue;
       }
 
-      clip.tracks.push(new TrackType(name, times, values));
+      clip.tracks.push(new TrackType(name, times, values, getTrackInterpolation(track.trackType)));
     }
   }
 
