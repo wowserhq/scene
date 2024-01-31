@@ -9,6 +9,12 @@ import {
   M2Track,
 } from '@wowserhq/format';
 
+type ModelBounds = {
+  extent: Float32Array;
+  center: Float32Array;
+  radius: number;
+};
+
 type TextureSpec = {
   flags: number;
   component: M2_TEXTURE_COMPONENT;
@@ -33,7 +39,7 @@ type GroupSpec = {
 };
 
 type GeometrySpec = {
-  bounds: { extent: Float32Array; center: Float32Array; radius: number };
+  bounds: ModelBounds;
   vertexBuffer: ArrayBuffer;
   indexBuffer: ArrayBuffer;
   groups: GroupSpec[];
@@ -67,10 +73,11 @@ type ModelSpec = {
   bones: BoneSpec[];
   skinned: boolean;
   sequences: SequenceSpec[];
+  bounds: ModelBounds;
   loops: Uint32Array;
   textureWeights: M2TextureWeight[];
   textureTransforms: M2TextureTransform[];
   materialColors: M2Color[];
 };
 
-export { ModelSpec, BoneSpec, MaterialSpec, TextureSpec, SequenceSpec };
+export { ModelBounds, ModelSpec, BoneSpec, MaterialSpec, TextureSpec, SequenceSpec };

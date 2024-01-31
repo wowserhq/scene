@@ -1,6 +1,6 @@
 import { M2Batch, M2Model, M2SkinProfile } from '@wowserhq/format';
-import { ModelSpec } from './types.js';
-import { getBoundsCenter } from './util.js';
+import { ModelBounds, ModelSpec, SequenceSpec } from './types.js';
+import { expandExtent, getBoundsCenter, getBoundsRadius } from './util.js';
 import SceneWorker from '../../worker/SceneWorker.js';
 import { AssetHost, loadAsset } from '../../asset.js';
 
@@ -30,11 +30,20 @@ class ModelLoaderWorker extends SceneWorker {
     const geometry = this.#createGeometrySpec(model, skinProfile);
     const materials = this.#createMaterialSpecs(skinProfile);
     const { bones, skinned } = this.#createBoneSpecs(model);
-    const sequences = this.#createSequenceSpecs(model);
+    const { sequences, sequenceBounds } = this.#createSequenceSpecs(model);
     const loops = model.loops;
     const textureWeights = model.textureWeights;
     const textureTransforms = model.textureTransforms;
     const materialColors = model.colors;
+
+    // Expand geometry bounds by sequence bounds to produce model bounds
+    const extent = geometry.bounds.extent.slice(0);
+    expandExtent(extent, sequenceBounds.extent);
+    const bounds: ModelBounds = {
+      extent,
+      center: getBoundsCenter(extent),
+      radius: getBoundsRadius(extent),
+    };
 
     const spec: ModelSpec = {
       name: model.name,
@@ -44,6 +53,7 @@ class ModelLoaderWorker extends SceneWorker {
       skinned,
       loops,
       sequences,
+      bounds,
       textureWeights,
       textureTransforms,
       materialColors,
@@ -118,17 +128,33 @@ class ModelLoaderWorker extends SceneWorker {
   }
 
   #createSequenceSpecs(model: M2Model) {
-    return model.sequences.map((sequence) => ({
-      id: sequence.id,
-      variationIndex: sequence.variationIndex,
-      duration: sequence.duration,
-      moveSpeed: sequence.moveSpeed,
-      flags: sequence.flags,
-      frequency: sequence.frequency,
-      blendTime: sequence.blendTime,
-      variationNext: sequence.variationNext,
-      aliasNext: sequence.aliasNext,
-    }));
+    const extent = new Float32Array(6);
+    const sequenceSpecs: SequenceSpec[] = [];
+
+    for (const sequence of model.sequences) {
+      expandExtent(extent, sequence.bounds.extent);
+
+      sequenceSpecs.push({
+        id: sequence.id,
+        variationIndex: sequence.variationIndex,
+        duration: sequence.duration,
+        moveSpeed: sequence.moveSpeed,
+        flags: sequence.flags,
+        frequency: sequence.frequency,
+        blendTime: sequence.blendTime,
+        variationNext: sequence.variationNext,
+        aliasNext: sequence.aliasNext,
+      });
+    }
+
+    // Produce bounds that encompass all sequences
+    const sequenceBounds: ModelBounds = {
+      extent,
+      center: getBoundsCenter(extent),
+      radius: getBoundsRadius(extent),
+    };
+
+    return { sequences: sequenceSpecs, sequenceBounds };
   }
 
   #createBoneSpecs(model: M2Model) {

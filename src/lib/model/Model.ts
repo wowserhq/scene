@@ -27,6 +27,7 @@ class Model extends THREE.Object3D {
       this.#mesh = new THREE.Mesh(geometry, materials);
     }
 
+    this.#mesh.frustumCulled = false;
     this.#mesh.onBeforeRender = this.#onBeforeRender.bind(this);
     this.add(this.#mesh);
 
@@ -42,6 +43,10 @@ class Model extends THREE.Object3D {
     this.diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
     this.emissiveColor = new THREE.Color(0.0, 0.0, 0.0);
     this.alpha = 1.0;
+  }
+
+  get boundingBox() {
+    return this.#mesh.geometry.boundingBox;
   }
 
   get boundingSphere() {
