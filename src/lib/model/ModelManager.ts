@@ -219,13 +219,21 @@ class ModelManager {
 
     const animator = new ModelAnimator(spec.loops, spec.sequences, spec.skinned ? spec.bones : []);
 
-    for (const [index, textureWeight] of spec.textureWeights.entries()) {
-      animator.registerTrack(
-        { state: 'textureWeights', index },
-        textureWeight.weightTrack,
-        THREE.NumberKeyframeTrack,
-        (value: number) => value / 0x7fff,
-      );
+    const hasTextureWeights =
+      spec.textureWeights.length > 1 ||
+      spec.textureWeights[0]?.weightTrack.sequenceKeys.length > 1 ||
+      spec.textureWeights[0]?.weightTrack.sequenceKeys[0].length > 1 ||
+      spec.textureWeights[0]?.weightTrack.sequenceKeys[0][0] !== 0x7fff;
+
+    if (hasTextureWeights) {
+      for (const [index, textureWeight] of spec.textureWeights.entries()) {
+        animator.registerTrack(
+          { state: 'textureWeights', index },
+          textureWeight.weightTrack,
+          THREE.NumberKeyframeTrack,
+          (value: number) => value / 0x7fff,
+        );
+      }
     }
 
     for (const [index, textureTransform] of spec.textureTransforms.entries()) {
