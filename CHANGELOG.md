@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.29.0](https://github.com/wowserhq/scene/compare/v0.28.0...v0.29.0) (2024-02-01)
+
+
+### Features
+
+* **map:** pause doodad animations when doodads aren't visible ([89ba316](https://github.com/wowserhq/scene/commit/89ba316048f451d752854995419014aee5b52dbc))
+* **model:** use track types to determine interpolation mode ([9026ae6](https://github.com/wowserhq/scene/commit/9026ae67afeacfb6f4744860691a5d56087957a0))
+
+
+### Bug Fixes
+
+* **map:** avoid loading multiple copies of the same doodad ([d7e7323](https://github.com/wowserhq/scene/commit/d7e73236e378502b68a7f6319793455d7d1f6d4f))
+* **model:** account for sequence bounds when culling models ([7f9e0e6](https://github.com/wowserhq/scene/commit/7f9e0e62ffe7b7cb962a8a049589d052a19e142e))
+* **model:** correct light calculations for double-sided materials ([f7021b0](https://github.com/wowserhq/scene/commit/f7021b073a3b6d007ac4a9f7db2e4e2747dc3156))
+
 ## [0.28.0](https://github.com/wowserhq/scene/compare/v0.27.0...v0.28.0) (2024-01-27)
 
 
