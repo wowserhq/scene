@@ -118,7 +118,10 @@ class ModelManager {
     );
 
     const normals = new THREE.InterleavedBuffer(new Float32Array(vertexBuffer), 48 / 4);
-    geometry.setAttribute('normal', new THREE.InterleavedBufferAttribute(normals, 3, 20 / 4, true));
+    geometry.setAttribute(
+      'normal',
+      new THREE.InterleavedBufferAttribute(normals, 3, 20 / 4, false),
+    );
 
     const texCoord1 = new THREE.InterleavedBuffer(new Float32Array(vertexBuffer), 48 / 4);
     geometry.setAttribute(
