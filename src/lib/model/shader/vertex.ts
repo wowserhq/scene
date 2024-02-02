@@ -17,7 +17,7 @@ const VERTEX_SHADER_UNIFORMS = [
   { name: 'normalMatrix', type: 'mat3' },
   { name: 'projectionMatrix', type: 'mat4' },
   { name: 'cameraPosition', type: 'vec3' },
-  { name: 'textureTransforms[2]', type: 'mat4' },
+  { name: 'textureTransforms[2]', type: 'mat4', if: 'TEXTURE_TRANSFORMS' },
 ];
 
 const VERTEX_SHADER_INPUTS = [
@@ -160,17 +160,49 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
   const main = [];
 
   if (texCoord1 === M2_TEXTURE_COORD.COORD_T1) {
-    main.push(`vTexCoord1 = (textureTransforms[0] * vec4(texCoord1, 0.0, 1.0)).xy;`);
+    main.push(
+      ...[
+        `#ifdef TEXTURE_TRANSFORMS`,
+        `  vTexCoord1 = (textureTransforms[0] * vec4(texCoord1, 0.0, 1.0)).xy;`,
+        `#else`,
+        `  vTexCoord1 = texCoord1;`,
+        `#endif`,
+      ],
+    );
   } else if (texCoord1 === M2_TEXTURE_COORD.COORD_T2) {
-    main.push(`vTexCoord1 = (textureTransforms[0] * vec4(texCoord2, 0.0, 1.0)).xy;`);
+    main.push(
+      ...[
+        `#ifdef TEXTURE_TRANSFORMS`,
+        `  vTexCoord1 = (textureTransforms[0] * vec4(texCoord2, 0.0, 1.0)).xy;`,
+        `#else`,
+        `  vTexCoord1 = texCoord1;`,
+        `#endif`,
+      ],
+    );
   } else if (texCoord1 === M2_TEXTURE_COORD.COORD_ENV) {
     main.push(`vTexCoord1 = sphereMap(position, normal);`);
   }
 
   if (texCoord2 === M2_TEXTURE_COORD.COORD_T1) {
-    main.push(`vTexCoord2 = (textureTransforms[1] * vec4(texCoord1, 0.0, 1.0)).xy;`);
+    main.push(
+      ...[
+        `#ifdef TEXTURE_TRANSFORMS`,
+        `  vTexCoord2 = (textureTransforms[1] * vec4(texCoord1, 0.0, 1.0)).xy;`,
+        `#else`,
+        `  vTexCoord2 = texCoord1;`,
+        `#endif`,
+      ],
+    );
   } else if (texCoord2 === M2_TEXTURE_COORD.COORD_T2) {
-    main.push(`vTexCoord2 = (textureTransforms[1] * vec4(texCoord2, 0.0, 1.0)).xy;`);
+    main.push(
+      ...[
+        `#ifdef TEXTURE_TRANSFORMS`,
+        `  vTexCoord2 = (textureTransforms[1] * vec4(texCoord2, 0.0, 1.0)).xy;`,
+        `#else`,
+        `  vTexCoord2 = texCoord2;`,
+        `#endif`,
+      ],
+    );
   } else if (texCoord2 === M2_TEXTURE_COORD.COORD_ENV) {
     main.push(`vTexCoord2 = sphereMap(position, normal);`);
   }

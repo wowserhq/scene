@@ -41,7 +41,6 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
     this.#textureWeightIndex = textureWeightIndex;
     this.#textureTransformIndices = textureTransformIndices;
-    this.#textureTransforms = [new THREE.Matrix4(), new THREE.Matrix4()];
 
     this.#blend = blend;
     this.#materialParams = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
@@ -83,11 +82,12 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     this.uniforms = {
       ...uniforms,
       textures: { value: textures },
-      textureTransforms: { value: this.#textureTransforms },
       materialParams: { value: this.#materialParams },
       diffuseColor: { value: this.#diffuseColor },
       emissiveColor: { value: this.#emissiveColor },
     };
+
+    this.#setupTextureTransforms();
   }
 
   get alpha() {
@@ -211,6 +211,18 @@ class ModelMaterial extends THREE.RawShaderMaterial {
   ) {
     this.#textureTransforms[index].compose(translation, rotation, scaling);
     this.uniformsNeedUpdate = true;
+  }
+
+  #setupTextureTransforms() {
+    if (this.#textureTransformIndices.length === 0) {
+      return;
+    }
+
+    this.#textureTransforms = [new THREE.Matrix4(), new THREE.Matrix4()];
+
+    this.uniforms.textureTransforms = { value: this.#textureTransforms };
+
+    this.defines['TEXTURE_TRANSFORMS'] = this.#textureTransforms.length;
   }
 
   #updateBlending() {
