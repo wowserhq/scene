@@ -5,7 +5,7 @@ import {
 } from '../../../shader/fog.js';
 import { composeShader } from '../../../shader/util.js';
 
-const VERTEX_SHADER_PRECISION = 'highp float';
+const VERTEX_SHADER_PRECISIONS = ['highp float'];
 
 const VERTEX_SHADER_UNIFORMS = [
   { name: 'modelMatrix', type: 'mat4' },
@@ -58,9 +58,9 @@ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 `;
 
 const vertexShader = (() => {
-  // Precision
+  // Precisions
 
-  const precision = VERTEX_SHADER_PRECISION;
+  const precisions = VERTEX_SHADER_PRECISIONS;
 
   // Uniforms
 
@@ -94,7 +94,7 @@ const vertexShader = (() => {
   main.push(VERTEX_SHADER_MAIN_FOG);
   main.push(VERTEX_SHADER_MAIN_POSITION);
 
-  return composeShader(precision, uniforms, inputs, outputs, functions, main);
+  return composeShader(precisions, uniforms, inputs, outputs, functions, main);
 })();
 
 export default vertexShader;

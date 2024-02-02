@@ -1,5 +1,5 @@
 const composeShader = (
-  precision: string,
+  precisions: string[],
   uniforms: { name: string; type: string; if?: string }[],
   inputs: { name: string; type: string; if?: string }[],
   outputs: { name: string; type: string }[],
@@ -8,7 +8,7 @@ const composeShader = (
 ) => {
   const lines = [];
 
-  lines.push(`precision ${precision};`);
+  lines.push(...precisions.map((precision) => `precision ${precision};`));
 
   lines.push('');
   for (const uniform of uniforms) {

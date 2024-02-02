@@ -2,7 +2,7 @@ import { M2_FRAGMENT_SHADER } from '@wowserhq/format';
 import { VARIABLE_FOG_FACTOR, FUNCTION_APPLY_FOG, UNIFORM_FOG_COLOR } from '../../shader/fog.js';
 import { composeShader } from '../../shader/util.js';
 
-const FRAGMENT_SHADER_PRECISION = 'highp float';
+const FRAGMENT_SHADER_PRECISIONS = ['highp float'];
 
 const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'textures[2]', type: 'sampler2D' },
@@ -140,9 +140,9 @@ applyFog(color, ${UNIFORM_FOG_COLOR.name}, ${VARIABLE_FOG_FACTOR.name} * materia
 `;
 
 const createFragmentShader = (textureCount: number, combineFunction: string) => {
-  // Precision
+  // Precisions
 
-  const precision = FRAGMENT_SHADER_PRECISION;
+  const precisions = FRAGMENT_SHADER_PRECISIONS;
 
   // Uniforms
 
@@ -197,7 +197,7 @@ const createFragmentShader = (textureCount: number, combineFunction: string) => 
 
   main.push(FRAGMENT_SHADER_MAIN_FOG);
 
-  return composeShader(precision, uniforms, inputs, outputs, functions, main);
+  return composeShader(precisions, uniforms, inputs, outputs, functions, main);
 };
 
 // prettier-ignore

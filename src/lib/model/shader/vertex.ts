@@ -6,7 +6,7 @@ import {
 } from '../../shader/fog.js';
 import { composeShader } from '../../shader/util.js';
 
-const VERTEX_SHADER_PRECISION = 'highp float';
+const VERTEX_SHADER_PRECISIONS = ['highp float'];
 
 const VERTEX_SHADER_UNIFORMS = [
   { name: 'bindMatrix', type: 'mat4', if: 'USE_SKINNING' },
@@ -113,7 +113,9 @@ const VERTEX_SHADER_MAIN_POSITION = `
 `;
 
 const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE_COORD) => {
-  const precision = VERTEX_SHADER_PRECISION;
+  // Precisions
+
+  const precisions = VERTEX_SHADER_PRECISIONS;
 
   // Uniforms
 
@@ -181,7 +183,7 @@ const createVertexShader = (texCoord1?: M2_TEXTURE_COORD, texCoord2?: M2_TEXTURE
 
   main.push(VERTEX_SHADER_MAIN_POSITION);
 
-  return composeShader(precision, uniforms, inputs, outputs, functions, main);
+  return composeShader(precisions, uniforms, inputs, outputs, functions, main);
 };
 
 // prettier-ignore

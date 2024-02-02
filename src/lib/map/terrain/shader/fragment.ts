@@ -1,7 +1,7 @@
 import { FUNCTION_APPLY_FOG, UNIFORM_FOG_COLOR, VARIABLE_FOG_FACTOR } from '../../../shader/fog.js';
 import { composeShader } from '../../../shader/util.js';
 
-const FRAGMENT_SHADER_PRECISION = 'highp float';
+const FRAGMENT_SHADER_PRECISIONS = ['highp float'];
 
 const FRAGMENT_SHADER_UNIFORMS = [
   { name: 'layerCount', type: 'int' },
@@ -66,9 +66,9 @@ applyFog(color, ${UNIFORM_FOG_COLOR.name}, ${VARIABLE_FOG_FACTOR.name});
 `;
 
 const fragmentShader = (() => {
-  // Precision
+  // Precisions
 
-  const precision = FRAGMENT_SHADER_PRECISION;
+  const precisions = FRAGMENT_SHADER_PRECISIONS;
 
   // Uniforms
 
@@ -100,7 +100,7 @@ const fragmentShader = (() => {
   main.push(FRAGMENT_SHADER_MAIN_LIGHTING);
   main.push(FRAGMENT_SHADER_MAIN_FOG);
 
-  return composeShader(precision, uniforms, inputs, outputs, functions, main);
+  return composeShader(precisions, uniforms, inputs, outputs, functions, main);
 })();
 
 export default fragmentShader;
