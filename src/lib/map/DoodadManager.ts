@@ -42,7 +42,8 @@ class DoodadManager {
       areaGroup.visible = areaVisible;
 
       for (const doodad of areaGroup.children as Model[]) {
-        const doodadVisible = areaVisible && cullingFrustum.intersectsObject(doodad);
+        const doodadVisible =
+          areaVisible && cullingFrustum.intersectsSphere(doodad.boundingSphereWorld);
 
         if (doodadVisible) {
           doodad.show();

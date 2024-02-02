@@ -13,6 +13,8 @@ class Model extends THREE.Object3D {
   #mesh: THREE.Mesh;
   #skinned: boolean;
 
+  #boundingSphereWorld = new THREE.Sphere();
+
   constructor(
     geometry: THREE.BufferGeometry,
     materials: THREE.Material[],
@@ -56,6 +58,10 @@ class Model extends THREE.Object3D {
     return this.#mesh.geometry.boundingSphere;
   }
 
+  get boundingSphereWorld() {
+    return this.#boundingSphereWorld;
+  }
+
   get skinned() {
     return this.#skinned;
   }
@@ -80,6 +86,12 @@ class Model extends THREE.Object3D {
 
     this.visible = true;
     this.animation.resume();
+  }
+
+  updateMatrixWorld(force?: boolean) {
+    super.updateMatrixWorld(force);
+
+    this.#boundingSphereWorld.copy(this.boundingSphere).applyMatrix4(this.matrixWorld);
   }
 
   #onBeforeRender(
