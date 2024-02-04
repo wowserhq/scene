@@ -14,7 +14,7 @@ import ModelAnimator from './ModelAnimator.js';
 type ModelResources = {
   name: string;
   geometry: THREE.BufferGeometry;
-  materials: THREE.Material[];
+  materials: MaterialSpec[];
   animator: ModelAnimator;
   skinned: boolean;
 };
@@ -80,12 +80,11 @@ class ModelManager {
 
     const animator = this.#createAnimator(spec);
     const geometry = this.#createGeometry(spec);
-    const materials = await this.#createMaterials(spec);
 
     const resources: ModelResources = {
       name: spec.name,
       geometry,
-      materials,
+      materials: spec.materials,
       animator,
       skinned: spec.skinned,
     };
@@ -156,9 +155,11 @@ class ModelManager {
     return geometry;
   }
 
-  #createMaterials(spec: ModelSpec) {
+  #createMaterials(resources: ModelResources) {
     return Promise.all(
-      spec.materials.map((materialSpec) => this.#createMaterial(materialSpec, spec.skinned)),
+      resources.materials.map((materialSpec) =>
+        this.#createMaterial(materialSpec, resources.skinned),
+      ),
     );
   }
 
@@ -202,15 +203,12 @@ class ModelManager {
     return new THREE.Texture();
   }
 
-  #createModel(resources: ModelResources) {
-    const model = new Model(
-      resources.geometry,
-      resources.materials,
-      resources.animator,
-      resources.skinned,
-    );
+  async #createModel(resources: ModelResources) {
+    const { name, geometry, animator, skinned } = resources;
+    const materials = await this.#createMaterials(resources);
 
-    model.name = resources.name;
+    const model = new Model(geometry, materials, animator, skinned);
+    model.name = name;
 
     return model;
   }
