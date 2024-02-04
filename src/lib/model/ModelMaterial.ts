@@ -232,12 +232,16 @@ class ModelMaterial extends THREE.RawShaderMaterial {
       ? M2_MATERIAL_BLEND_TO_THREE_BLEND_OPAQUE[this.#blend]
       : M2_MATERIAL_BLEND_TO_THREE_BLEND_TRANSPARENT[this.#blend];
     const threeBlendState = THREE_BLEND_STATE[threeBlend];
-    const { blending, blendSrc, blendDst } = threeBlendState;
+
+    const { blending, blendSrc, blendDst, blendSrcAlpha, blendDstAlpha } = threeBlendState;
+    const transparent = blending !== THREE.NoBlending;
 
     this.blending = blending;
     this.blendSrc = blendSrc;
     this.blendDst = blendDst;
-    this.transparent = blending !== THREE.NoBlending;
+    this.blendSrcAlpha = blendSrcAlpha;
+    this.blendDstAlpha = blendDstAlpha;
+    this.transparent = transparent;
   }
 }
 
