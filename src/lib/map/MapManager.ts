@@ -194,7 +194,7 @@ class MapManager extends EventTarget {
     // Cull entire groups to save on frustum intersection cost
     this.#cullGroups();
 
-    this.#doodadManager.cull(this.#cullingFrustum);
+    this.#doodadManager.cull(this.#cullingFrustum, camera.position);
     this.#doodadManager.update(deltaTime);
   }
 

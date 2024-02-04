@@ -5,6 +5,7 @@ import { AssetHost } from '../asset.js';
 import { MapAreaSpec, MapDoodadDefSpec } from './loader/types.js';
 import MapLight from './light/MapLight.js';
 import Model from '../model/Model.js';
+import { getFade } from '../world.js';
 
 type DoodadManagerOptions = {
   host: AssetHost;
@@ -34,7 +35,7 @@ class DoodadManager {
     });
   }
 
-  cull(cullingFrustum: THREE.Frustum) {
+  cull(cullingFrustum: THREE.Frustum, cameraPosition: THREE.Vector3) {
     for (const [areaId, areaGroup] of this.#loadedAreas.entries()) {
       const areaBounds = this.#areaBounds.get(areaId);
       const areaVisible = cullingFrustum.intersectsSphere(areaBounds);
@@ -42,11 +43,15 @@ class DoodadManager {
       areaGroup.visible = areaVisible;
 
       for (const doodad of areaGroup.children as Model[]) {
+        const distance = cameraPosition.distanceTo(doodad.position);
+        const fade = getFade(distance, doodad.sizeCategory);
+
         const doodadVisible =
-          areaVisible && cullingFrustum.intersectsSphere(doodad.boundingSphereWorld);
+          areaVisible && fade > 0.0 && cullingFrustum.intersectsSphere(doodad.boundingSphereWorld);
 
         if (doodadVisible) {
           doodad.show();
+          doodad.alpha = fade;
         } else {
           doodad.hide();
         }

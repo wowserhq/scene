@@ -2,18 +2,22 @@ import * as THREE from 'three';
 import ModelMaterial from './ModelMaterial.js';
 import ModelAnimator from './ModelAnimator.js';
 import ModelAnimation from './ModelAnimation.js';
+import { getSizeCategory } from '../world.js';
 
 class Model extends THREE.Object3D {
   animation: ModelAnimation;
 
   diffuseColor: THREE.Color;
   emissiveColor: THREE.Color;
-  alpha: 1.0;
+  alpha = 1.0;
 
   #mesh: THREE.Mesh;
   #skinned: boolean;
 
   #boundingSphereWorld = new THREE.Sphere();
+
+  #size = 0.0;
+  #sizeCategory = 0;
 
   constructor(
     geometry: THREE.BufferGeometry,
@@ -62,6 +66,14 @@ class Model extends THREE.Object3D {
     return this.#boundingSphereWorld;
   }
 
+  get size() {
+    return this.#size;
+  }
+
+  get sizeCategory() {
+    return this.#sizeCategory;
+  }
+
   get skinned() {
     return this.#skinned;
   }
@@ -91,7 +103,21 @@ class Model extends THREE.Object3D {
   updateMatrixWorld(force?: boolean) {
     super.updateMatrixWorld(force);
 
+    this.#updateBounds();
+    this.#updateSize();
+  }
+
+  #updateBounds() {
     this.#boundingSphereWorld.copy(this.boundingSphere).applyMatrix4(this.matrixWorld);
+  }
+
+  #updateSize() {
+    const sizeX = (this.boundingBox.max.x - this.boundingBox.min.x) * this.scale.x;
+    const sizeY = (this.boundingBox.max.y - this.boundingBox.min.y) * this.scale.y;
+    const sizeZ = (this.boundingBox.max.z - this.boundingBox.min.z) * this.scale.z;
+
+    this.#size = Math.max(sizeX, sizeY, sizeZ);
+    this.#sizeCategory = getSizeCategory(this.#size);
   }
 
   #onBeforeRender(

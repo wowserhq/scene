@@ -21,6 +21,31 @@ const getSizeCategory = (size: number) => {
   return f;
 };
 
+const getFade = (distance: number, sizeCategory: number) => {
+  const min = WORLD_FADE_DIST_MIN[sizeCategory];
+  const max = WORLD_FADE_DIST_MAX[sizeCategory];
+
+  if (distance < min) {
+    return 1.0;
+  }
+
+  if (distance > max) {
+    return 0.0;
+  }
+
+  const fade = 1.0 - (distance - min) / (max - min);
+
+  if (fade <= 0.0099999998) {
+    return 0.0;
+  }
+
+  if (fade > 0.99000001) {
+    return 1.0;
+  }
+
+  return fade;
+};
+
 const scaleFadeDist = (scale: number) => {
   for (let i = 0; i < WORLD_FADE_SIZE_DEFAULT.length; i++) {
     const first = i === 0;
@@ -37,6 +62,7 @@ const scaleFadeDist = (scale: number) => {
 scaleFadeDist(1.5);
 
 export {
+  getFade,
   getSizeCategory,
   scaleFadeDist,
   WORLD_FADE_SIZE,
