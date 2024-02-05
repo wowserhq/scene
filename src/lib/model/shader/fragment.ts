@@ -110,9 +110,16 @@ void combineModMod2x(inout vec4 color, in vec4 tex0, in vec4 tex1) {
 
 const FRAGMENT_SHADER_MAIN_ALPHATEST = `
 // Alpha test
-if (color.a < materialParams.y) {
-  discard;
-}
+#ifdef ALPHA_TO_COVERAGE
+  color.a = smoothstep(materialParams.y, materialParams.y + fwidth(color.a), color.a);
+  if (color.a == 0.0) {
+    discard;
+  }
+#else
+  if (color.a < materialParams.y) {
+    discard;
+  }
+#endif
 `;
 
 const FRAGMENT_SHADER_MAIN_LIGHTING = `

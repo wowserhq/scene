@@ -19,11 +19,11 @@ const THREE_BLEND_STATE = {
     blendDstAlpha: THREE.ZeroFactor,
   },
   [THREE_BLEND.BLEND_ALPHA_KEY]: {
-    blending: THREE.NoBlending,
-    blendSrc: THREE.OneFactor,
-    blendDst: THREE.ZeroFactor,
+    blending: THREE.CustomBlending,
+    blendSrc: THREE.SrcAlphaFactor,
+    blendDst: THREE.OneMinusSrcAlphaFactor,
     blendSrcAlpha: THREE.OneFactor,
-    blendDstAlpha: THREE.ZeroFactor,
+    blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
   },
   [THREE_BLEND.BLEND_ALPHA]: {
     blending: THREE.CustomBlending,

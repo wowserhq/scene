@@ -73,6 +73,11 @@ class ModelMaterial extends THREE.RawShaderMaterial {
       this.defines['USE_SKINNING'] = 1;
     }
 
+    if (this.#blend === M2_MATERIAL_BLEND.BLEND_ALPHA_KEY) {
+      this.defines['ALPHA_TO_COVERAGE'] = 1;
+      this.alphaToCoverage = true;
+    }
+
     this.glslVersion = THREE.GLSL3;
     this.vertexShader = vertexShader;
     this.fragmentShader = fragmentShader;
@@ -101,14 +106,20 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
     this.#materialParams.x = alpha;
 
-    // Opaque - keep all pixels, regardless of alpha
-    // Alpha key - scale pixel test by alpha
-    // Other - keep all pixels that aren't fully transparent
+    // Alpha test behavior
     if (this.#blend === M2_MATERIAL_BLEND.BLEND_OPAQUE) {
+      // Disable alpha test
       this.#materialParams.y = 0.0;
     } else if (this.#blend === M2_MATERIAL_BLEND.BLEND_ALPHA_KEY) {
-      this.#materialParams.y = alpha * (224.0 / 255.0);
+      if (Math.trunc(alpha * 224.0) >= 1) {
+        // Scale alpha test by current alpha value
+        this.#materialParams.y = alpha * (224.0 / 255.0);
+      } else {
+        // Disable alpha test
+        this.#materialParams.y = 0.0;
+      }
     } else {
+      // Lower alpha test threshold
       this.#materialParams.y = 1.0 / 255.0;
     }
 
