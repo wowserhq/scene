@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.30.0](https://github.com/wowserhq/scene/compare/v0.29.0...v0.30.0) (2024-02-05)
+
+
+### Features
+
+* **map:** fade doodads in and out based on distance ([199ec9e](https://github.com/wowserhq/scene/commit/199ec9e58d0442ce49588905152b5c4cf7fe7757))
+* **model:** improve anti-aliasing for models using alpha-keyed blending ([0d0032b](https://github.com/wowserhq/scene/commit/0d0032ba5eda87f7c514864de144b23e1a156ff4))
+* **world:** add fade constants and scaling logic ([42cc70a](https://github.com/wowserhq/scene/commit/42cc70ae3b71197e727ea6c41623c34f12c73b1c))
+
+
+### Bug Fixes
+
+* **model:** correct alpha handling using separate blend func ([b96720c](https://github.com/wowserhq/scene/commit/b96720c04688c765693e99a9cfef53fed829bec1))
+
 ## [0.29.0](https://github.com/wowserhq/scene/compare/v0.28.0...v0.29.0) (2024-02-01)
 
 
