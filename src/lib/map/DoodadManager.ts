@@ -141,7 +141,7 @@ class DoodadManager {
     const areaGroup = new THREE.Group();
     areaGroup.name = 'doodads';
 
-    const areaBoundingBox = new THREE.Box3();
+    const areaBounds = new THREE.Sphere();
 
     const doodadModels = await Promise.all(
       doodadDefs.map((doodadDef) => this.#modelManager.get(doodadDef.name)),
@@ -163,12 +163,11 @@ class DoodadManager {
       model.updateMatrixWorld();
 
       areaGroup.add(model);
-      areaBoundingBox.expandByObject(model);
+      areaBounds.union(model.boundingSphereWorld);
 
       this.#doodads.set(def.id, model);
     }
 
-    const areaBounds = areaBoundingBox.getBoundingSphere(new THREE.Sphere());
     this.#areaBounds.set(areaId, areaBounds);
 
     this.#loadedAreas.set(areaId, areaGroup);
