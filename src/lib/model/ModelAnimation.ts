@@ -3,6 +3,8 @@ import { ModelMaterialColor, ModelTextureTransform } from './types.js';
 import Model from './Model.js';
 import ModelAnimator from './ModelAnimator.js';
 import { BoneSpec } from './loader/types.js';
+import ModelSkeleton from './ModelSkeleton.js';
+import ModelBone from './ModelBone.js';
 
 class ModelAnimation extends THREE.Object3D {
   // States
@@ -11,8 +13,7 @@ class ModelAnimation extends THREE.Object3D {
   materialColors: ModelMaterialColor[] = [];
 
   // Skeleton
-  skeleton: THREE.Skeleton;
-  rootBones: THREE.Bone[];
+  skeleton: ModelSkeleton;
 
   #model: Model;
   #animator: ModelAnimator;
@@ -96,24 +97,18 @@ class ModelAnimation extends THREE.Object3D {
       return;
     }
 
-    const bones: THREE.Bone[] = [];
-    const rootBones: THREE.Bone[] = [];
+    const bones: ModelBone[] = [];
 
     for (const boneSpec of boneSpecs) {
-      const bone = new THREE.Bone();
-      bone.visible = false;
-      bone.position.set(boneSpec.position[0], boneSpec.position[1], boneSpec.position[2]);
-      bones.push(bone);
+      const flags = boneSpec.flags;
+      const parent = bones[boneSpec.parentIndex] ?? null;
+      const pivot = new THREE.Vector3(boneSpec.pivot[0], boneSpec.pivot[1], boneSpec.pivot[2]);
+      const bone = new ModelBone(flags, parent, pivot);
 
-      if (boneSpec.parentIndex === -1) {
-        rootBones.push(bone);
-      } else {
-        bones[boneSpec.parentIndex].add(bone);
-      }
+      bones.push(bone);
     }
 
-    this.skeleton = new THREE.Skeleton(bones);
-    this.rootBones = rootBones;
+    this.skeleton = new ModelSkeleton(this.#model.mesh, bones);
   }
 
   #autoplay() {

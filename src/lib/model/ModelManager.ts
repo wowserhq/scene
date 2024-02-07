@@ -48,10 +48,10 @@ class ModelManager {
     return this.#createModel(resources);
   }
 
-  update(deltaTime: number) {
+  update(deltaTime: number, camera: THREE.Camera) {
     for (const resources of this.#loaded.values()) {
       if (resources.animator) {
-        resources.animator.update(deltaTime);
+        resources.animator.update(deltaTime, camera);
       }
     }
   }
@@ -274,13 +274,13 @@ class ModelManager {
 
     for (const [index, bone] of spec.bones.entries()) {
       animator.registerTrack(
-        { state: 'bones', index, property: 'position' },
-        bone.positionTrack,
+        { state: 'bones', index, property: 'translation' },
+        bone.translationTrack,
         THREE.VectorKeyframeTrack,
       );
 
       animator.registerTrack(
-        { state: 'bones', index, property: 'quaternion' },
+        { state: 'bones', index, property: 'rotation' },
         bone.rotationTrack,
         THREE.QuaternionKeyframeTrack,
         (value: number) => (value > 0 ? value - 0x7fff : value + 0x7fff) / 0x7fff,

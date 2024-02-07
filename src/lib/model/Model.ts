@@ -3,6 +3,7 @@ import ModelMaterial from './ModelMaterial.js';
 import ModelAnimator from './ModelAnimator.js';
 import ModelAnimation from './ModelAnimation.js';
 import { getSizeCategory } from '../world.js';
+import { SkinnedMesh } from 'three';
 
 class Model extends THREE.Object3D {
   animation: ModelAnimation;
@@ -32,6 +33,7 @@ class Model extends THREE.Object3D {
     // Avoid skinning overhead when model does not make use of bone animations
     if (skinned) {
       this.#mesh = new THREE.SkinnedMesh(geometry, materials);
+      (this.#mesh as SkinnedMesh).boundingSphere = this.boundingSphere;
     } else {
       this.#mesh = new THREE.Mesh(geometry, materials);
     }
@@ -43,10 +45,8 @@ class Model extends THREE.Object3D {
     // Every model instance gets a unique animation state managed by a single animator
     this.animation = animator.createAnimation(this);
 
-    // Every skinned model instance gets a unique skeleton
     if (skinned) {
-      this.#mesh.add(...this.animation.rootBones);
-      (this.#mesh as THREE.SkinnedMesh).bind(this.animation.skeleton);
+      (this.#mesh as SkinnedMesh).skeleton = this.animation.skeleton as any;
     }
 
     this.diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
@@ -64,6 +64,10 @@ class Model extends THREE.Object3D {
 
   get boundingSphereWorld() {
     return this.#boundingSphereWorld;
+  }
+
+  get mesh() {
+    return this.#mesh;
   }
 
   get size() {

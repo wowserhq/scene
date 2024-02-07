@@ -70,7 +70,7 @@ class ModelAnimator {
     this.#modelsByAnimation.delete(animation);
   }
 
-  update(deltaTime: number) {
+  update(deltaTime: number, camera: THREE.Camera) {
     this.#mixer.update(deltaTime);
 
     for (const model of this.#modelsByAnimation.values()) {
@@ -80,7 +80,7 @@ class ModelAnimator {
 
       // Ensure bone matrices are updated (matrix world auto-updates are disabled)
       if (model.skinned) {
-        model.updateMatrixWorld();
+        model.animation.skeleton.updateBones(camera);
       }
     }
   }

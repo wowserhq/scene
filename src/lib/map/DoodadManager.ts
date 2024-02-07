@@ -93,8 +93,8 @@ class DoodadManager {
     this.#doodadDefs.delete(areaId);
   }
 
-  update(deltaTime: number) {
-    this.#modelManager.update(deltaTime);
+  update(deltaTime: number, camera: THREE.Camera) {
+    this.#modelManager.update(deltaTime, camera);
   }
 
   #refDoodad(refId: number) {

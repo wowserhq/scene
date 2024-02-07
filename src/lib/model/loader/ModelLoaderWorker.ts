@@ -162,29 +162,6 @@ class ModelLoaderWorker extends SceneWorker {
     let skinned = false;
 
     for (const bone of model.bones) {
-      let position = bone.pivot;
-
-      // Convert pivot to absolute position
-      let parentBone = boneSpecs[bone.parentIndex];
-      while (parentBone) {
-        position[0] -= parentBone.position[0];
-        position[1] -= parentBone.position[1];
-        position[2] -= parentBone.position[2];
-
-        parentBone = boneSpecs[parentBone.parentIndex];
-      }
-
-      // Convert translation track to position track
-      const positionTrack = bone.translationTrack;
-      for (let s = 0; s < positionTrack.sequenceKeys.length; s++) {
-        const values = positionTrack.sequenceKeys[s];
-        for (let i = 0; i < values.length / 3; i++) {
-          values[i * 3] += position[0];
-          values[i * 3 + 1] += position[1];
-          values[i * 3 + 2] += position[2];
-        }
-      }
-
       // If bone animations are present, the model needs skinning
       const hasTranslationAnim = bone.translationTrack.sequenceTimes.length > 0;
       const hasRotationAnim = bone.rotationTrack.sequenceTimes.length > 0;
@@ -199,10 +176,10 @@ class ModelLoaderWorker extends SceneWorker {
       }
 
       boneSpecs.push({
-        position,
+        pivot: bone.pivot,
         parentIndex: bone.parentIndex,
         flags: bone.flags,
-        positionTrack: positionTrack,
+        translationTrack: bone.translationTrack,
         rotationTrack: bone.rotationTrack,
         scaleTrack: bone.scaleTrack,
       });

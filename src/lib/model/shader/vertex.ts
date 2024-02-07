@@ -9,8 +9,6 @@ import { composeShader } from '../../shader/util.js';
 const VERTEX_SHADER_PRECISIONS = ['highp float'];
 
 const VERTEX_SHADER_UNIFORMS = [
-  { name: 'bindMatrix', type: 'mat4', if: 'USE_SKINNING' },
-  { name: 'bindMatrixInverse', type: 'mat4', if: 'USE_SKINNING' },
   { name: 'boneTexture', type: 'highp sampler2D', if: 'USE_SKINNING' },
   { name: 'modelMatrix', type: 'mat4' },
   { name: 'modelViewMatrix', type: 'mat4' },
@@ -79,12 +77,12 @@ vec3 objectNormal = normal;
   skinMatrix += skinWeight.y * boneMatY;
   skinMatrix += skinWeight.z * boneMatZ;
   skinMatrix += skinWeight.w * boneMatW;
-  skinMatrix = bindMatrixInverse * skinMatrix * bindMatrix;
 
-  objectNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
+  vec3 skinNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
+  vViewNormal = normalize(skinNormal);
+#else
+  vViewNormal = normalize(normalMatrix * objectNormal);
 #endif
-
-vViewNormal = normalize(normalMatrix * objectNormal);
 `;
 
 const VERTEX_SHADER_MAIN_FOG = `
@@ -96,7 +94,7 @@ ${VARIABLE_FOG_FACTOR.name} = calculateFogFactor(${UNIFORM_FOG_PARAMS.name}, cam
 
 const VERTEX_SHADER_MAIN_POSITION = `
 #ifdef USE_SKINNING
-  vec4 skinVertex = bindMatrix * vec4(position, 1.0);
+  vec4 skinVertex = vec4(position, 1.0);
 
   vec4 skinned = vec4(0.0);
   skinned += boneMatX * skinVertex * skinWeight.x;
@@ -104,9 +102,7 @@ const VERTEX_SHADER_MAIN_POSITION = `
   skinned += boneMatZ * skinVertex * skinWeight.z;
   skinned += boneMatW * skinVertex * skinWeight.w;
 
-  vec3 skinnedPosition = (bindMatrixInverse * skinned).xyz;
-
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(skinnedPosition, 1.0);
+  gl_Position = projectionMatrix * skinned;
 #else
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 #endif

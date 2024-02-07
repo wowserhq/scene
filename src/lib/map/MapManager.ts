@@ -195,7 +195,7 @@ class MapManager extends EventTarget {
     this.#cullGroups();
 
     this.#doodadManager.cull(this.#cullingFrustum, camera.position);
-    this.#doodadManager.update(deltaTime);
+    this.#doodadManager.update(deltaTime, camera);
   }
 
   dispose() {

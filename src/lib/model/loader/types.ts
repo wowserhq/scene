@@ -58,10 +58,10 @@ type SequenceSpec = {
 };
 
 type BoneSpec = {
-  position: Float32Array;
-  parentIndex: number;
   flags: number;
-  positionTrack: M2Track<Float32Array>;
+  parentIndex: number;
+  pivot: Float32Array;
+  translationTrack: M2Track<Float32Array>;
   rotationTrack: M2Track<Int16Array>;
   scaleTrack: M2Track<Float32Array>;
 };
