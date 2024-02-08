@@ -6,6 +6,7 @@ import {
 } from './const.js';
 import { THREE_BLEND_STATE } from '../blend.js';
 import Model from './Model.js';
+import ModelSkeleton from './ModelSkeleton.js';
 
 const DEFAULT_BLEND: M2_MATERIAL_BLEND = M2_MATERIAL_BLEND.BLEND_OPAQUE;
 const DEFAULT_FLAGS: number = 0x0;
@@ -146,6 +147,10 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
   set lit(lit: number) {
     this.#materialParams.setZ(lit);
+  }
+
+  set skeleton(skeleton: ModelSkeleton) {
+    this.uniforms.boneTexture = { value: skeleton.boneTexture };
   }
 
   prepareMaterial(model: Model) {

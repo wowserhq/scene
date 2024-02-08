@@ -4,14 +4,13 @@ import ModelAnimator from './ModelAnimator.js';
 import ModelAnimation from './ModelAnimation.js';
 import { getSizeCategory } from '../world.js';
 
-class Model extends THREE.Object3D {
+class Model extends THREE.Mesh {
   animation: ModelAnimation;
 
   diffuseColor: THREE.Color;
   emissiveColor: THREE.Color;
   alpha = 1.0;
 
-  #mesh: THREE.Mesh;
   #skinned: boolean;
 
   #boundingSphereWorld = new THREE.Sphere();
@@ -21,31 +20,25 @@ class Model extends THREE.Object3D {
 
   constructor(
     geometry: THREE.BufferGeometry,
-    materials: THREE.Material[],
+    materials: ModelMaterial[],
     animator: ModelAnimator,
     skinned: boolean,
   ) {
-    super();
+    super(geometry, materials);
+
+    // Model culling is handled by scene managers
+    this.frustumCulled = false;
 
     this.#skinned = skinned;
-
-    // Avoid skinning overhead when model does not make use of bone animations
-    if (skinned) {
-      this.#mesh = new THREE.SkinnedMesh(geometry, materials);
-      (this.#mesh as THREE.SkinnedMesh).boundingSphere = this.boundingSphere;
-    } else {
-      this.#mesh = new THREE.Mesh(geometry, materials);
-    }
-
-    this.#mesh.frustumCulled = false;
-    this.#mesh.onBeforeRender = this.#onBeforeRender.bind(this);
-    this.add(this.#mesh);
 
     // Every model instance gets a unique animation state managed by a single animator
     this.animation = animator.createAnimation(this);
 
-    if (skinned) {
-      (this.#mesh as THREE.SkinnedMesh).skeleton = this.animation.skeleton as any;
+    // If skinned, make skeleton available to materials for bone texture uploads
+    if (this.#skinned) {
+      for (const material of materials) {
+        material.skeleton = this.animation.skeleton;
+      }
     }
 
     this.diffuseColor = new THREE.Color(1.0, 1.0, 1.0);
@@ -54,19 +47,15 @@ class Model extends THREE.Object3D {
   }
 
   get boundingBox() {
-    return this.#mesh.geometry.boundingBox;
+    return this.geometry.boundingBox;
   }
 
   get boundingSphere() {
-    return this.#mesh.geometry.boundingSphere;
+    return this.geometry.boundingSphere;
   }
 
   get boundingSphereWorld() {
     return this.#boundingSphereWorld;
-  }
-
-  get mesh() {
-    return this.#mesh;
   }
 
   get size() {
@@ -123,7 +112,7 @@ class Model extends THREE.Object3D {
     this.#sizeCategory = getSizeCategory(this.#size);
   }
 
-  #onBeforeRender(
+  onBeforeRender(
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     camera: THREE.Camera,

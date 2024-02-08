@@ -108,7 +108,7 @@ class ModelAnimation extends THREE.Object3D {
       bones.push(bone);
     }
 
-    this.skeleton = new ModelSkeleton(this.#model.mesh, bones);
+    this.skeleton = new ModelSkeleton(this.#model, bones);
   }
 
   #autoplay() {

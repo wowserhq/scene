@@ -29,10 +29,6 @@ class ModelSkeleton {
     }
   }
 
-  update() {
-    // noop
-  }
-
   updateBones(camera: THREE.Camera) {
     // Ensure model view matrix is synchronized
     this.#root.modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, this.#root.matrixWorld);
