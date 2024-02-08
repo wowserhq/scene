@@ -29,7 +29,7 @@ class ModelLoaderWorker extends SceneWorker {
 
     const geometry = this.#createGeometrySpec(model, skinProfile);
     const materials = this.#createMaterialSpecs(skinProfile);
-    const { bones, skinned } = this.#createBoneSpecs(model);
+    const { bones, skinned, boneBuffers } = this.#createBoneSpecs(model);
     const { sequences, sequenceBounds } = this.#createSequenceSpecs(model);
     const loops = model.loops;
     const textureWeights = model.textureWeights;
@@ -59,7 +59,7 @@ class ModelLoaderWorker extends SceneWorker {
       materialColors,
     };
 
-    const transfer = [spec.geometry.vertexBuffer, spec.geometry.indexBuffer];
+    const transfer = [spec.geometry.vertexBuffer, spec.geometry.indexBuffer, ...boneBuffers];
 
     return [spec, transfer];
   }
@@ -159,6 +159,7 @@ class ModelLoaderWorker extends SceneWorker {
 
   #createBoneSpecs(model: M2Model) {
     const boneSpecs = [];
+    const boneBuffers = [];
     let skinned = false;
 
     for (const bone of model.bones) {
@@ -175,6 +176,21 @@ class ModelLoaderWorker extends SceneWorker {
         skinned = true;
       }
 
+      for (let i = 0; i < bone.translationTrack.sequenceTimes.length; i++) {
+        boneBuffers.push(bone.translationTrack.sequenceTimes[i].buffer);
+        boneBuffers.push(bone.translationTrack.sequenceKeys[i].buffer);
+      }
+
+      for (let i = 0; i < bone.rotationTrack.sequenceTimes.length; i++) {
+        boneBuffers.push(bone.rotationTrack.sequenceTimes[i].buffer);
+        boneBuffers.push(bone.rotationTrack.sequenceKeys[i].buffer);
+      }
+
+      for (let i = 0; i < bone.scaleTrack.sequenceTimes.length; i++) {
+        boneBuffers.push(bone.scaleTrack.sequenceTimes[i].buffer);
+        boneBuffers.push(bone.scaleTrack.sequenceKeys[i].buffer);
+      }
+
       boneSpecs.push({
         pivot: bone.pivot,
         parentIndex: bone.parentIndex,
@@ -185,7 +201,7 @@ class ModelLoaderWorker extends SceneWorker {
       });
     }
 
-    return { bones: boneSpecs, skinned };
+    return { skinned, bones: boneSpecs, boneBuffers };
   }
 }
 
