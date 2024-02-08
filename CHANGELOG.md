@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.31.0](https://github.com/wowserhq/scene/compare/v0.30.0...v0.31.0) (2024-02-08)
+
+
+### Features
+
+* **model:** add spherical billboard support for bones ([9e4d1df](https://github.com/wowserhq/scene/commit/9e4d1df3c7ced4a32cf8335103525b6dc6885b93))
+
 ## [0.30.0](https://github.com/wowserhq/scene/compare/v0.29.0...v0.30.0) (2024-02-05)
 
 
