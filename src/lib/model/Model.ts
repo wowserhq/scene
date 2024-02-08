@@ -99,6 +99,16 @@ class Model extends THREE.Mesh {
     this.#updateSize();
   }
 
+  updateSkeleton(camera: THREE.Camera) {
+    // Calculate current model view matrix. This calculation is also performed by the Three.js
+    // renderer, but since model skeleton calculations need a current model view matrix and run
+    // before the render call, we can't rely on the model view matrix update in the renderer.
+    this.modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, this.matrixWorld);
+
+    // Calculate bone matrices
+    this.animation.skeleton.update();
+  }
+
   #updateBounds() {
     this.#boundingSphereWorld.copy(this.boundingSphere).applyMatrix4(this.matrixWorld);
   }

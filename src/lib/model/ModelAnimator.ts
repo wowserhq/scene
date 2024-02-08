@@ -78,9 +78,8 @@ class ModelAnimator {
         continue;
       }
 
-      // Ensure bone matrices are updated (matrix world auto-updates are disabled)
       if (model.skinned) {
-        model.animation.skeleton.updateBones(camera);
+        model.updateSkeleton(camera);
       }
     }
   }

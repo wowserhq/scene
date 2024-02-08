@@ -29,12 +29,23 @@ class ModelSkeleton {
     }
   }
 
-  updateBones(camera: THREE.Camera) {
-    // Ensure model view matrix is synchronized
-    this.#root.modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, this.#root.matrixWorld);
-
+  /**
+   * Calculate current bone matrices for all bones in skeleton. Each bone matrix is composed of
+   * the current bone translation, rotation, and scale, and is adjusted to reflect parent
+   * transformations within the bone hierarchy. Note that bone translation, rotation, and scale may
+   * be animated.
+   *
+   * Depending on bone flags, certain bone matrices may be modified to reflect spherical or
+   * cylindrical billboarding. Billboarding ensures vertices attached to the bone match the camera
+   * view, and is often used in lighting effects (eg. a quad with a yellow circle texture may be
+   * spherically billboarded to give the illusion of an orb of light).
+   */
+  update() {
     for (const [index, bone] of this.#bones.entries()) {
+      // Calculate bone matrix
       updateBone(this.#root, bone);
+
+      // Copy bone matrix into the skeleton's bone texture
       bone.matrix.toArray(this.#boneMatrices, index * 16);
     }
 
@@ -51,18 +62,16 @@ class ModelSkeleton {
     size = Math.ceil(size / 4) * 4;
     size = Math.max(size, 4);
 
-    const boneMatrices = new Float32Array(size * size * 4);
+    this.#boneMatrices = new Float32Array(size * size * 4);
 
     const boneTexture = new THREE.DataTexture(
-      boneMatrices,
+      this.#boneMatrices,
       size,
       size,
       THREE.RGBAFormat,
       THREE.FloatType,
     );
     boneTexture.needsUpdate = true;
-
-    this.#boneMatrices = boneMatrices;
     this.#boneTexture = boneTexture;
   }
 }
