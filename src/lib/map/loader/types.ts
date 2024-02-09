@@ -5,8 +5,8 @@ type MapSpec = {
 type MapDoodadDefSpec = {
   id: number;
   name: string;
-  position: Float32Array;
-  rotation: Float32Array;
+  position: number[];
+  rotation: number[];
   scale: number;
 };
 
@@ -34,7 +34,7 @@ type TerrainGeometrySpec = {
 };
 
 type TerrainSpec = {
-  position: Float32Array;
+  position: number[];
   geometry: TerrainGeometrySpec;
   material: TerrainMaterialSpec;
 };
