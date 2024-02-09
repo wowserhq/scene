@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { M2_BONE_FLAG } from '@wowserhq/format';
 import ModelBone from './ModelBone.js';
 
 const _boneTranslation = new THREE.Vector3();
@@ -79,13 +80,13 @@ const billboardBone = (bone: ModelBone) => {
   _transformedPivot.set(bone.pivot.x, bone.pivot.y, bone.pivot.z, 1.0).applyMatrix4(bone.matrix);
 
   // Spherical billboard
-  if (bone.flags & 0x8) {
+  if (bone.flags & M2_BONE_FLAG.FLAG_SPHERICAL_BILLBOARD) {
     applySphericalBillboard(bone);
-  } else if (bone.flags & 0x10) {
+  } else if (bone.flags & M2_BONE_FLAG.FLAG_CYLINDRICAL_BILLBOARD_X) {
     // TODO
-  } else if (bone.flags & 0x20) {
+  } else if (bone.flags & M2_BONE_FLAG.FLAG_CYLINDRICAL_BILLBOARD_Y) {
     // TODO
-  } else if (bone.flags & 0x40) {
+  } else if (bone.flags & M2_BONE_FLAG.FLAG_CYLINDRICAL_BILLBOARD_Z) {
     // TODO
   }
 
@@ -117,7 +118,7 @@ const updateBone = (root: THREE.Object3D, bone: ModelBone) => {
     bone.matrix.copy(parentMatrix);
   }
 
-  if (bone.flags & (0x8 | 0x10 | 0x20 | 0x40)) {
+  if (bone.flags & M2_BONE_FLAG.FLAG_BILLBOARD) {
     billboardBone(bone);
   }
 };
