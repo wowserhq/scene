@@ -77,8 +77,6 @@ const VERTEX_SHADER_MAIN_SKINNING = `
 `;
 
 const VERTEX_SHADER_MAIN_NORMAL = `
-vec3 objectNormal = normal;
-
 #ifdef USE_SKINNING
   mat4 skinMatrix = mat4(0.0);
 
@@ -95,10 +93,9 @@ vec3 objectNormal = normal;
     skinMatrix += skinWeight.w * boneMatW;
   #endif
 
-  vec3 skinNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
-  vViewNormal = normalize(skinNormal);
+  vViewNormal = normalize(mat3(skinMatrix) * normal);
 #else
-  vViewNormal = normalize(normalMatrix * objectNormal);
+  vViewNormal = normalize(normalMatrix * normal);
 #endif
 `;
 
