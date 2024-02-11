@@ -6,12 +6,11 @@ const VARIABLE_FOG_FACTOR = { name: 'vFogFactor', type: 'float' };
 
 const FUNCTION_CALCULATE_FOG_FACTOR = `
 float calculateFogFactor(in vec4 params, in float distance) {
-  float start = params.x;
+  float step = params.x;
   float end = params.y;
   float density = params.z;
   float multiplier = params.w;
 
-  float step = 1.0 / (end - start);
   float base = max((distance * -(multiplier * step)) + (end * step), 0.0);
   float factor = 1.0 - clamp(pow(base, density), 0.0, 1.0);
 

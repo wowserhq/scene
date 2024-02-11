@@ -81,8 +81,9 @@ const blendLights = (
     );
 
     const fogStart = fogStartScalar * fogEnd;
+    const fogStep = 1.0 / (fogEnd - fogStart);
 
-    table.fogParams.set(fogStart, fogEnd, 1.0, 1.0);
+    table.fogParams.set(fogStep, fogEnd, 1.0, 1.0);
 
     addWeightedVector(blend.fogParams, table.fogParams, weight);
   }

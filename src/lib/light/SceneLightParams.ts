@@ -6,7 +6,7 @@ class SceneLightParams {
   #sunDiffuseColor = new THREE.Color(0.25, 0.5, 1.0);
   #sunAmbientColor = new THREE.Color(0.5, 0.5, 0.5);
 
-  #fogParams = new THREE.Vector4(0.0, 577.0, 1.0, 1.0);
+  #fogParams = new THREE.Vector4(1.0 / 577.0, 577.0, 1.0, 1.0);
   #fogColor = new THREE.Color(0.25, 0.5, 0.8);
 
   #uniforms = {

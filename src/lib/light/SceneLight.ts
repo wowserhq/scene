@@ -47,7 +47,7 @@ class SceneLight {
   }
 
   get fogStart() {
-    return this.#params[this.#location].fogParams.x;
+    return this.fogEnd - 1.0 / this.#params[this.#location].fogParams.x;
   }
 
   get fogEnd() {
