@@ -172,6 +172,7 @@ class ModelManager {
     const textureWeightIndex = spec.textureWeightIndex;
     const textureTransformIndices = spec.textureTransformIndices;
     const materialColorIndex = spec.materialColorIndex;
+    const boneInfluences = spec.boneInfluences;
     const uniforms = { ...this.#sceneLight.uniforms };
 
     return new ModelMaterial(
@@ -182,6 +183,7 @@ class ModelManager {
       textureTransformIndices,
       materialColorIndex,
       skinned,
+      boneInfluences,
       uniforms,
       spec.blend,
       spec.flags,

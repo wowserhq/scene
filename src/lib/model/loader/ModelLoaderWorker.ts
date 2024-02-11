@@ -124,6 +124,7 @@ class ModelLoaderWorker extends SceneWorker {
       materialColorIndex: batch.colorIndex,
       vertexShader: batch.vertexShader,
       fragmentShader: batch.fragmentShader,
+      boneInfluences: batch.skinSection.boneInfluences,
     };
   }
 

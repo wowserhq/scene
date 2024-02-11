@@ -30,6 +30,7 @@ type MaterialSpec = {
   vertexShader: M2_VERTEX_SHADER;
   fragmentShader: M2_FRAGMENT_SHADER;
   blend: M2_MATERIAL_BLEND;
+  boneInfluences: number;
 };
 
 type GroupSpec = {

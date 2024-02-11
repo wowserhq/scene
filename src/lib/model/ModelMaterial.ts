@@ -34,6 +34,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
     textureTransformIndices: number[],
     colorIndex: number,
     skinned: boolean = false,
+    boneInfluences: number = 0,
     uniforms: Record<string, THREE.IUniform> = {},
     blend = DEFAULT_BLEND,
     flags = DEFAULT_FLAGS,
@@ -72,6 +73,7 @@ class ModelMaterial extends THREE.RawShaderMaterial {
 
     if (skinned) {
       this.defines['USE_SKINNING'] = 1;
+      this.defines['BONE_INFLUENCES'] = boneInfluences;
     }
 
     if (this.#blend === M2_MATERIAL_BLEND.BLEND_ALPHA_KEY) {

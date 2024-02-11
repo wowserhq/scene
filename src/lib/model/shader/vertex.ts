@@ -61,10 +61,18 @@ const VERTEX_SHADER_FUNCTIONS = [VERTEX_SHADER_SPHERE_MAP, VERTEX_SHADER_GET_BON
 
 const VERTEX_SHADER_MAIN_SKINNING = `
 #ifdef USE_SKINNING
-  mat4 boneMatX = getBoneMatrix(skinIndex.x);
-  mat4 boneMatY = getBoneMatrix(skinIndex.y);
-  mat4 boneMatZ = getBoneMatrix(skinIndex.z);
-  mat4 boneMatW = getBoneMatrix(skinIndex.w);
+  #if BONE_INFLUENCES > 0
+    mat4 boneMatX = getBoneMatrix(skinIndex.x);
+  #endif
+  #if BONE_INFLUENCES > 1
+    mat4 boneMatY = getBoneMatrix(skinIndex.y);
+  #endif
+  #if BONE_INFLUENCES > 2
+    mat4 boneMatZ = getBoneMatrix(skinIndex.z);
+  #endif
+  #if BONE_INFLUENCES > 3
+    mat4 boneMatW = getBoneMatrix(skinIndex.w);
+  #endif
 #endif
 `;
 
@@ -73,10 +81,19 @@ vec3 objectNormal = normal;
 
 #ifdef USE_SKINNING
   mat4 skinMatrix = mat4(0.0);
-  skinMatrix += skinWeight.x * boneMatX;
-  skinMatrix += skinWeight.y * boneMatY;
-  skinMatrix += skinWeight.z * boneMatZ;
-  skinMatrix += skinWeight.w * boneMatW;
+
+  #if BONE_INFLUENCES > 0
+    skinMatrix += skinWeight.x * boneMatX;
+  #endif
+  #if BONE_INFLUENCES > 1
+    skinMatrix += skinWeight.y * boneMatY;
+  #endif
+  #if BONE_INFLUENCES > 2
+    skinMatrix += skinWeight.z * boneMatZ;
+  #endif
+  #if BONE_INFLUENCES > 3
+    skinMatrix += skinWeight.w * boneMatW;
+  #endif
 
   vec3 skinNormal = vec4(skinMatrix * vec4(objectNormal, 0.0)).xyz;
   vViewNormal = normalize(skinNormal);
@@ -95,12 +112,20 @@ ${VARIABLE_FOG_FACTOR.name} = calculateFogFactor(${UNIFORM_FOG_PARAMS.name}, cam
 const VERTEX_SHADER_MAIN_POSITION = `
 #ifdef USE_SKINNING
   vec4 skinVertex = vec4(position, 1.0);
-
   vec4 skinned = vec4(0.0);
-  skinned += boneMatX * skinVertex * skinWeight.x;
-  skinned += boneMatY * skinVertex * skinWeight.y;
-  skinned += boneMatZ * skinVertex * skinWeight.z;
-  skinned += boneMatW * skinVertex * skinWeight.w;
+
+  #if BONE_INFLUENCES > 0
+    skinned += boneMatX * skinVertex * skinWeight.x;
+  #endif
+  #if BONE_INFLUENCES > 1
+    skinned += boneMatY * skinVertex * skinWeight.y;
+  #endif
+  #if BONE_INFLUENCES > 2
+    skinned += boneMatZ * skinVertex * skinWeight.z;
+  #endif
+  #if BONE_INFLUENCES > 3
+    skinned += boneMatW * skinVertex * skinWeight.w;
+  #endif
 
   gl_Position = projectionMatrix * skinned;
 #else
