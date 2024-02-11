@@ -11,9 +11,10 @@ class TerrainMaterial extends THREE.RawShaderMaterial {
   ) {
     super();
 
+    this.defines['LAYER_COUNT'] = layerCount;
+
     this.uniforms = {
       ...uniforms,
-      layerCount: { value: layerCount },
       layers: { value: layerTextures },
       splat: { value: splatTexture },
     };

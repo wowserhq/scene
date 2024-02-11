@@ -4,7 +4,6 @@ import { composeShader } from '../../../shader/util.js';
 const FRAGMENT_SHADER_PRECISIONS = ['highp float'];
 
 const FRAGMENT_SHADER_UNIFORMS = [
-  { name: 'layerCount', type: 'int' },
   { name: 'layers[4]', type: 'sampler2D' },
   { name: 'splat', type: 'sampler2D' },
   { name: 'sunDiffuseColor', type: 'vec3' },
@@ -36,21 +35,21 @@ color = texture(layers[0], vLayerCoord);
 blend = texture(splat, vSplatCoord);
 
 // 2nd layer
-if (layerCount > 1) {
+#if LAYER_COUNT > 1
   layer = texture(layers[1], vLayerCoord);
   color = blendLayer(color, layer, blend.rrrr);
-}
+#endif
 
-if (layerCount > 2) {
+#if LAYER_COUNT > 2
   layer = texture(layers[2], vLayerCoord);
   color = blendLayer(color, layer, blend.gggg);
-}
+#endif
 
 // 3rd layer
-if (layerCount > 3) {
+#if LAYER_COUNT > 3
   layer = texture(layers[3], vLayerCoord);
   color = blendLayer(color, layer, blend.bbbb);
-}
+#endif
 
 // Terrain is always opaque
 color.a = 1.0;
