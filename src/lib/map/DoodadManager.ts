@@ -43,18 +43,28 @@ class DoodadManager {
       areaGroup.visible = areaVisible;
 
       for (const doodad of areaGroup.children as Model[]) {
+        if (!areaVisible) {
+          doodad.hide();
+          continue;
+        }
+
         const distance = cameraPosition.distanceTo(doodad.position);
         const fade = getFade(distance, doodad.sizeCategory);
 
-        const doodadVisible =
-          areaVisible && fade > 0.0 && cullingFrustum.intersectsSphere(doodad.boundingSphereWorld);
-
-        if (doodadVisible) {
-          doodad.show();
-          doodad.alpha = fade;
-        } else {
+        if (fade === 0.0) {
           doodad.hide();
+          continue;
         }
+
+        const doodadVisible = cullingFrustum.intersectsSphere(doodad.boundingSphereWorld);
+
+        if (!doodadVisible) {
+          doodad.hide();
+          continue;
+        }
+
+        doodad.alpha = fade;
+        doodad.show();
       }
     }
   }
