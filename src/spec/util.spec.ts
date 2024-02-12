@@ -1,5 +1,5 @@
-import { nextFrame, paced, sleep } from '../lib/util';
 import { describe, expect, test } from 'vitest';
+import { nextFrame, paced, sleep } from '../lib/util.js';
 
 describe('util', () => {
   describe('nextFrame', () => {

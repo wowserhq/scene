@@ -1,5 +1,5 @@
-import { getSizeCategory, getFade } from '../lib/world.js';
 import { describe, expect, test } from 'vitest';
+import { getSizeCategory, getFade } from '../lib/world.js';
 
 describe('world', () => {
   describe('getFade', () => {

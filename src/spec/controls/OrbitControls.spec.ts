@@ -1,6 +1,6 @@
-import OrbitControls from '../../lib/controls/OrbitControls';
 import { describe, expect, test } from 'vitest';
 import * as THREE from 'three';
+import OrbitControls from '../../lib/controls/OrbitControls.js';
 
 const getRenderer = () => {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
