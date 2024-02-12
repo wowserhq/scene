@@ -56,6 +56,7 @@ class ModelAnimation extends THREE.Object3D {
   resume() {
     for (const action of this.#suspendedActions) {
       action.enabled = true;
+      (action.getMixer() as any)._activateAction(action);
 
       this.#suspendedActions.delete(action);
       this.#playingActions.add(action);
@@ -65,6 +66,7 @@ class ModelAnimation extends THREE.Object3D {
   suspend() {
     for (const action of this.#playingActions) {
       action.enabled = false;
+      (action.getMixer() as any)._deactivateAction(action);
 
       this.#playingActions.delete(action);
       this.#suspendedActions.add(action);
