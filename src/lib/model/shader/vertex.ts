@@ -61,38 +61,25 @@ const VERTEX_SHADER_FUNCTIONS = [VERTEX_SHADER_SPHERE_MAP, VERTEX_SHADER_GET_BON
 
 const VERTEX_SHADER_MAIN_SKINNING = `
 #ifdef USE_SKINNING
+  mat4 skinMatrix = mat4(0.0);
+
   #if BONE_INFLUENCES > 0
-    mat4 boneMatX = getBoneMatrix(skinIndex.x);
+    skinMatrix += skinWeight.x * getBoneMatrix(skinIndex.x);
   #endif
   #if BONE_INFLUENCES > 1
-    mat4 boneMatY = getBoneMatrix(skinIndex.y);
+    skinMatrix += skinWeight.y * getBoneMatrix(skinIndex.y);
   #endif
   #if BONE_INFLUENCES > 2
-    mat4 boneMatZ = getBoneMatrix(skinIndex.z);
+    skinMatrix += skinWeight.z * getBoneMatrix(skinIndex.z);
   #endif
   #if BONE_INFLUENCES > 3
-    mat4 boneMatW = getBoneMatrix(skinIndex.w);
+    skinMatrix += skinWeight.w * getBoneMatrix(skinIndex.w);
   #endif
 #endif
 `;
 
 const VERTEX_SHADER_MAIN_NORMAL = `
 #ifdef USE_SKINNING
-  mat4 skinMatrix = mat4(0.0);
-
-  #if BONE_INFLUENCES > 0
-    skinMatrix += skinWeight.x * boneMatX;
-  #endif
-  #if BONE_INFLUENCES > 1
-    skinMatrix += skinWeight.y * boneMatY;
-  #endif
-  #if BONE_INFLUENCES > 2
-    skinMatrix += skinWeight.z * boneMatZ;
-  #endif
-  #if BONE_INFLUENCES > 3
-    skinMatrix += skinWeight.w * boneMatW;
-  #endif
-
   vViewNormal = normalize(mat3(skinMatrix) * normal);
 #else
   vViewNormal = normalize(normalMatrix * normal);
@@ -108,23 +95,7 @@ ${VARIABLE_FOG_FACTOR.name} = calculateFogFactor(${UNIFORM_FOG_PARAMS.name}, cam
 
 const VERTEX_SHADER_MAIN_POSITION = `
 #ifdef USE_SKINNING
-  vec4 skinVertex = vec4(position, 1.0);
-  vec4 skinned = vec4(0.0);
-
-  #if BONE_INFLUENCES > 0
-    skinned += boneMatX * skinVertex * skinWeight.x;
-  #endif
-  #if BONE_INFLUENCES > 1
-    skinned += boneMatY * skinVertex * skinWeight.y;
-  #endif
-  #if BONE_INFLUENCES > 2
-    skinned += boneMatZ * skinVertex * skinWeight.z;
-  #endif
-  #if BONE_INFLUENCES > 3
-    skinned += boneMatW * skinVertex * skinWeight.w;
-  #endif
-
-  gl_Position = projectionMatrix * skinned;
+  gl_Position = projectionMatrix * skinMatrix * vec4(position, 1.0);
 #else
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 #endif
