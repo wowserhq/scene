@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.32.0](https://github.com/wowserhq/scene/compare/v0.31.0...v0.32.0) (2024-02-14)
+
+
+### Features
+
+* **map:** reduce cost of doodad culling ([c9059d9](https://github.com/wowserhq/scene/commit/c9059d9f69f0f8f0d96832b894aa91fbcb421bd6))
+* **map:** use defines to control layer blends in terrain fragment shader ([29e2d15](https://github.com/wowserhq/scene/commit/29e2d152e442c8e08c8a17f0de51fb08bffe3675))
+* **model:** cap model vertex shader bone influences based on model skin section details ([6819fcd](https://github.com/wowserhq/scene/commit/6819fcde57e0adcd214bb69574a69be245841743))
+* **model:** optimize normal transformation in vertex shader ([bffa6a6](https://github.com/wowserhq/scene/commit/bffa6a63a48586576d7a53f447e7af89597df374))
+* **model:** reduce overhead of animation mixer updates ([33730d1](https://github.com/wowserhq/scene/commit/33730d18c2ee5db7026814567d228c5932a4d7ae))
+
 ## [0.31.0](https://github.com/wowserhq/scene/compare/v0.30.0...v0.31.0) (2024-02-08)
 
 
