@@ -39,7 +39,7 @@
     "@wowserhq/format": "^0.25.0"
   },
   "peerDependencies": {
-    "three": "^0.160.0"
+    "three": "^0.161.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^18.5.0",
