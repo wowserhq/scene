@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@tweenjs/tween.js": "^23.1.1",
-    "@wowserhq/format": "^0.25.0"
+    "@wowserhq/format": "^0.26.1"
   },
   "peerDependencies": {
     "three": "^0.161.0"
